@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>股神養成計畫 · 股海人生</title>
+<meta name="description" content="一款寫實的模擬股民遊戲。5 種出身、豐富人生支線,上千種結局組合。">
+<style>
+:root{
+  --sk-red:#E30613;      /* 新光紅 */
+  --sk-red2:#B00610;
+  --sk-red3:#FF5A4D;
+  --sk-ink:#2b0d10;
+  --gold:#F6C453;
+  --up:#38d39f;
+  --down:#ff6b7a;
+  --glass:rgba(255,255,255,.08);
+  --glass2:rgba(255,255,255,.05);
+  --glassborder:rgba(255,255,255,.16);
+  --glasshi:rgba(255,255,255,.22);
+  --ink:#fff5f5;
+  --ink2:#f0d3d3;
+  --ink3:#c99a9a;
+  --shadow:0 20px 60px rgba(60,0,4,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+  color:var(--ink);min-height:100vh;line-height:1.75;-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(1100px 700px at 82% -8%, rgba(255,90,77,.45), transparent 55%),
+    radial-gradient(900px 700px at 10% 8%, rgba(227,6,19,.55), transparent 50%),
+    radial-gradient(1200px 900px at 50% 120%, rgba(120,4,14,.7), transparent 60%),
+    linear-gradient(160deg,#6d0710 0%,#43060c 45%,#2a0509 100%);
+  background-attachment:fixed;
+}
+.wrap{max-width:960px;margin:0 auto;padding:20px 15px 70px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";font-family:"SF Mono",ui-monospace,"Roboto Mono",monospace}
+
+/* glass */
+.glass{
+  background:linear-gradient(160deg,var(--glass),var(--glass2));
+  border:1px solid var(--glassborder);
+  border-radius:22px;
+  box-shadow:var(--shadow), inset 0 1px 0 var(--glasshi);
+  backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+}
+
+/* brand / logo */
+.brandbar{display:flex;align-items:center;gap:13px;margin:6px 4px 20px}
+.logo{display:flex;align-items:center;gap:11px}
+.logo .mark{width:44px;height:44px;flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.logo .txt .cn{font-size:20px;font-weight:800;letter-spacing:3px;line-height:1}
+.logo .txt .en{font-size:9.5px;letter-spacing:2.5px;color:var(--ink3);margin-top:3px;font-weight:600}
+.brandbar .prod{margin-left:auto;text-align:right}
+.brandbar .prod .t1{font-size:16px;font-weight:800;letter-spacing:2px}
+.brandbar .prod .t2{font-size:10px;color:var(--ink3);letter-spacing:1px}
+
+/* hero */
+.hero{padding:18px 22px 16px;text-align:center;position:relative;overflow:hidden;margin-bottom:14px}
+.hero .kicker{font-size:11px;letter-spacing:6px;color:var(--sk-red3);font-weight:700;margin-bottom:8px}
+.hero .big{font-size:28px;font-weight:900;letter-spacing:1px;line-height:1.25}
+.hero .subttl{font-size:12.5px;letter-spacing:3px;color:var(--sk-red3);font-weight:700;margin-top:6px}
+.hero .big .g{color:var(--gold)} .hero .big .r{color:var(--sk-red3)}
+.hero .tagline{color:var(--ink2);font-size:13px;margin-top:8px;line-height:1.5;max-width:600px;margin-left:auto;margin-right:auto}
+.ticker{display:none}   /* 跑馬燈收起,讓角色選項一進來就看得到 */
+.ticker b{color:var(--up)} .ticker .dn{color:var(--down)}
+.combo{display:none}    /* 「1000種結局」那行也收起,省首頁空間 */
+
+.seedbar{display:flex;gap:8px;align-items:center;margin:20px 0 4px;flex-wrap:wrap;justify-content:center}
+.seedbar label{font-size:12px;color:var(--ink3)}
+.seedbar input{background:rgba(0,0,0,.25);border:1px solid var(--glassborder);color:var(--ink);padding:9px 13px;border-radius:12px;font-size:16px;width:180px;font-family:inherit}
+.seedbar input:focus{outline:none;border-color:var(--sk-red3)}
+.btn-mini{font-size:12px;color:var(--ink2);border:1px solid var(--glassborder);padding:9px 13px;border-radius:12px;transition:.15s;background:var(--glass2)}
+.btn-mini:hover{border-color:var(--sk-red3);color:#fff}
+
+.section-title{font-size:12px;color:var(--ink2);letter-spacing:4px;margin:8px 6px 14px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.pc{text-align:left;padding:18px;transition:.2s;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;cursor:pointer}
+.pc::after{content:"";position:absolute;inset:0;border-radius:22px;background:linear-gradient(160deg,rgba(255,90,77,.12),transparent 60%);opacity:0;transition:.2s;pointer-events:none}
+.pc:hover{transform:translateY(-4px);border-color:var(--glasshi)}
+.pc:hover::after{opacity:1}
+.pc .top{display:flex;align-items:center;gap:13px}
+.pc .em{font-size:34px;line-height:1;filter:drop-shadow(0 3px 8px rgba(0,0,0,.4))}
+.pc .nm{font-weight:800;font-size:17px}
+.pc .tg{font-size:11.5px;color:var(--sk-red3);letter-spacing:.5px;font-weight:600}
+.pc .ds{font-size:12.5px;color:var(--ink2);line-height:1.6}
+.pc .flaw{font-size:11.5px;color:var(--ink3)}
+.pc .flaw b{color:var(--down)}
+.pc .cap{display:flex;gap:12px;font-size:11px;color:var(--ink3);border-top:1px solid rgba(255,255,255,.1);padding-top:10px;margin-top:auto}
+.pc .cap .mono{color:var(--gold)}
+
+/* game */
+#game{display:none}
+.hud{padding:15px 17px;margin-bottom:15px}
+.hud .row1{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+.hud .who{display:flex;align-items:center;gap:11px;min-width:0}
+.hud .who .em{font-size:28px}
+.hud .who .nm{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud .who .tg{font-size:11px;color:var(--sk-red3);font-weight:600}
+.hud .clock{text-align:right;font-size:12px;color:var(--ink3);flex:0 0 auto}
+.hud .hdright{margin-left:auto;display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.ovr{display:flex;flex-direction:column;align-items:center;justify-content:center;width:58px;height:50px;border-radius:13px;background:linear-gradient(160deg,#d3a12a,#8a6508);color:#fff;box-shadow:0 4px 12px rgba(184,134,11,.35);flex:0 0 auto}
+.ovr .ovrn{font-size:23px;font-weight:900;line-height:1}
+.ovr .ovrl{font-size:8.5px;letter-spacing:.5px;margin-top:2px;opacity:.92}
+.phasebar{margin-bottom:12px}
+.phz{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;gap:8px}
+.phz .phname{font-weight:800;color:#b8860b;font-size:13.5px;flex:0 0 auto}
+.phz .phnext{color:var(--ink3);font-size:10.5px;text-align:right;min-width:0}
+.phsegs{display:flex;gap:4px}
+.phseg{flex:1;height:6px;border-radius:99px;background:rgba(0,0,0,.1);overflow:hidden}
+.phseg i{display:block;height:100%;background:linear-gradient(90deg,#e0a52a,#b8860b);border-radius:99px;transition:width .4s}
+.hud .clock b{color:#fff;font-size:16px}
+.wealth{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:13px}
+.wcell{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:10px 11px}
+.wcell .k{font-size:10px;color:var(--ink3);letter-spacing:1px}
+.wcell .v{font-size:15px;font-weight:800;margin-top:3px}
+.wcell.net .v{color:var(--gold)}
+.pos{color:var(--up)} .neg{color:var(--down)}
+.bars{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.bar .bl{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-bottom:5px}
+.bar .bl .mono{color:#fff}
+.track{height:8px;border-radius:99px;background:rgba(0,0,0,.3);overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.fill.mind{background:linear-gradient(90deg,#8b7bff,#b3a7ff)}
+.fill.rel{background:linear-gradient(90deg,#ff6b9d,#ffa7c4)}
+.fill.fame{background:linear-gradient(90deg,#d99a2e,var(--gold))}
+
+.stage{padding:22px 22px 24px;min-height:230px}
+.beat-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.beat-head .yr{font-size:11px;color:var(--ink2);border:1px solid var(--glassborder);border-radius:99px;padding:4px 11px;letter-spacing:1px;background:var(--glass2)}
+.beat-head .tt{font-size:18px;font-weight:800;letter-spacing:.5px}
+.beat-head .chap{font-size:10px;color:var(--sk-red3);letter-spacing:2px;font-weight:700}
+.story{font-size:15px;color:#fff0f0;line-height:1.9;white-space:pre-wrap}
+.result{margin:15px 0 2px;padding:14px 16px;border-radius:14px;border-left:3px solid var(--sk-red3);background:rgba(255,90,77,.1);font-size:14px;color:#ffe6e6;animation:fade .4s}
+.result.good{border-color:var(--up);background:rgba(56,211,159,.1)}
+.result.bad{border-color:var(--down);background:rgba(255,107,122,.12)}
+.result .deltas{margin-top:8px;display:flex;gap:13px;flex-wrap:wrap;font-size:12px}
+.choices{display:flex;flex-direction:column;gap:11px;margin-top:20px}
+.choice{text-align:left;padding:15px 17px;border-radius:15px;border:1px solid var(--glassborder);background:linear-gradient(160deg,var(--glass),var(--glass2));transition:.16s;position:relative;backdrop-filter:blur(6px)}
+.choice:hover{border-color:var(--sk-red3);transform:translateX(4px);background:rgba(255,90,77,.12)}
+.choice .cl{font-size:14.5px;font-weight:700}
+.choice .ch{font-size:12px;color:var(--ink3);margin-top:4px}
+.choice .arrow{position:absolute;right:15px;top:50%;transform:translateY(-50%);color:var(--sk-red3);opacity:0;transition:.16s}
+.choice:hover .arrow{opacity:1;right:12px}
+.nextbtn{margin-top:20px;width:100%;padding:16px;border-radius:15px;font-weight:800;font-size:15px;background:linear-gradient(90deg,var(--sk-red2),var(--sk-red),var(--sk-red3));color:#fff;transition:.15s;box-shadow:0 10px 26px rgba(227,6,19,.4);letter-spacing:1px}
+.nextbtn:disabled{opacity:.4;filter:grayscale(.55);box-shadow:none;cursor:not-allowed;background:#c9b6b6;color:#fff}
+.nextbtn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.log{margin-top:15px;padding:14px 16px}
+.log .lt{font-size:11px;color:var(--ink3);letter-spacing:2px;margin-bottom:9px}
+.log .li{font-size:12.5px;color:var(--ink2);padding:6px 0;border-top:1px dashed rgba(255,255,255,.12);line-height:1.6}
+.log .li:first-of-type{border-top:none}
+.log .li .yr{color:var(--sk-red3);margin-right:8px}
+
+/* ending */
+.ending{padding:34px 26px;text-align:center;animation:fade .6s}
+.ending .elogo{margin-bottom:18px;display:flex;justify-content:center}
+.ending .em{font-size:70px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+.ending .ti{font-size:28px;font-weight:900;margin:12px 0 4px;letter-spacing:1px}
+.ending .rank{font-size:13px;color:var(--gold);letter-spacing:3px;margin-bottom:6px}
+.ending .combo2{font-size:11px;color:var(--ink3);margin-bottom:18px}
+.ending .tx{font-size:15px;color:#ffecec;line-height:2;max-width:600px;margin:0 auto 24px;text-align:left;white-space:pre-wrap}
+.final{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;max-width:480px;margin:0 auto 22px}
+.final .fc{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:13px}
+.final .fc.big{grid-column:span 2}
+.final .fc .k{font-size:11px;color:var(--ink3)}
+.final .fc .v{font-size:19px;font-weight:900;margin-top:4px}
+.final .fc.big .v{font-size:26px;color:var(--gold)}
+.resultimg{margin:6px auto 18px;max-width:360px}
+.resultimg img{width:100%;height:auto;display:block;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);border:1px solid var(--glassborder)}
+.resultimg .rihint{font-size:12px;color:var(--ink3);margin-top:8px;text-align:center}
+.endbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.endbtns button{padding:13px 22px;border-radius:13px;font-weight:800;font-size:14px}
+.eb-main{background:linear-gradient(90deg,var(--sk-red2),var(--sk-red3));color:#fff;box-shadow:0 8px 20px rgba(227,6,19,.35)}
+.eb-share{border:1px solid var(--glassborder);color:#fff;background:var(--glass)}
+.eb-share:hover{border-color:var(--gold);color:#fff}
+.eb-alt{border:1px solid var(--glassborder);color:var(--ink2)}
+.eb-alt:hover{border-color:var(--sk-red3);color:#fff}
+.toast{margin:16px auto 0;max-width:440px;font-size:13px;color:var(--gold);border:1px solid rgba(246,196,83,.4);background:rgba(246,196,83,.1);border-radius:12px;max-height:0;overflow:hidden;opacity:0;transition:.3s}
+.toast.show{max-height:70px;opacity:1;padding:11px 14px}
+
+.foot{text-align:center;color:var(--ink3);font-size:11px;margin-top:28px;line-height:1.9}
+.foot .by{color:var(--ink2);font-weight:700;letter-spacing:1px}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:560px){
+  .wealth{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+  .final{grid-template-columns:1fr 1fr}
+  /* 首頁精簡:一進來就看到角色選項,不用下滑 */
+  .wrap{padding:12px 14px 60px}
+  #start .hero{padding:16px 18px 14px;margin-bottom:12px}
+  #start .hero .kicker{font-size:10px;letter-spacing:4px;margin-bottom:6px}
+  #start .hero .big{font-size:24px;line-height:1.2}
+  #start .hero .tagline{font-size:12.5px;margin-top:8px;line-height:1.5}
+  #start .hero .ticker,#start .hero .combo{display:none}   /* 跑馬燈/結局組合字先收起,省空間 */
+  #start .hero .seedbar{margin:12px 0 0}
+  .section-title{margin:2px 6px 10px}
+  #start .grid .pc{padding:12px 14px}
+  #start .grid .pc .em{font-size:28px}
+  #start .grid .pc .pcinfo .nm{font-size:16px}
+}
+
+/* ============ 手機優先 mobile-first + 下注/骰子/技能 ============ */
+.wrap{max-width:480px}
+/* 出身:精簡直式清單 */
+#start .grid{display:flex;flex-direction:column;grid-template-columns:none;gap:10px}
+#start .grid .pc{flex-direction:row;align-items:center;gap:14px;padding:15px 16px}
+#start .grid .pc .em{font-size:32px;flex:0 0 auto}
+#start .grid .pc .pcinfo{flex:1;min-width:0}
+#start .grid .pc .pcinfo .nm{font-size:17px;font-weight:800}
+#start .grid .pc .pcinfo .pcsub{font-size:12px;color:var(--ink3);margin-top:3px}
+#start .grid .pc .pcgo{font-size:20px;color:var(--sk-red3);flex:0 0 auto;opacity:.7}
+/* 背景介紹彈窗 */
+#introSheet .introtag{font-size:12px;color:var(--sk-red3);font-weight:700;letter-spacing:1px;margin:-6px 0 12px}
+#introSheet .introflaw{font-size:13px;color:var(--ink2);margin:12px 0 6px}
+#introSheet .introflaw b{color:var(--down)}
+#introSheet .introstats{font-size:13px;color:var(--ink2);background:rgba(0,0,0,.2);border:1px solid var(--glassborder);border-radius:12px;padding:11px 13px;margin-bottom:16px}
+#introSheet .introstats b{color:var(--gold);font-size:15px}
+body{padding-bottom:env(safe-area-inset-bottom)}
+#game .hud{position:static}
+/* 技能列 */
+.skbar{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.1)}
+.skbar .sp{font-size:12px;color:var(--ink2)}
+.skbar .sp b{color:var(--gold);font-size:15px;font-weight:800}
+.skbar .grow{flex:1}
+.skbtn{font-size:12.5px;font-weight:700;color:#fff;border:1px solid var(--glassborder);background:var(--glass);border-radius:11px;padding:8px 12px;transition:.15s}
+.skbtn:hover,.skbtn:active{border-color:var(--gold);background:rgba(246,196,83,.14)}
+.skbtn .dot{display:inline-block;min-width:16px;height:16px;line-height:16px;text-align:center;background:var(--sk-red);color:#fff;border-radius:99px;font-size:10px;margin-left:3px;font-weight:800}
+
+/* 下注(倍數)事件 */
+.betwrap{margin-top:18px}
+.betwrap .bl{font-size:12px;color:var(--ink3);letter-spacing:1px;margin-bottom:10px;text-align:center}
+.bets{display:flex;flex-direction:column;gap:11px}
+.betopt{display:flex;align-items:center;gap:13px;text-align:left;padding:14px 16px;border-radius:16px;border:1px solid var(--glassborder);background:linear-gradient(160deg,var(--glass),var(--glass2));transition:.16s;position:relative}
+.betopt:hover,.betopt:active{transform:translateY(-2px)}
+.betopt .mx{font-size:22px;font-weight:900;width:52px;text-align:center;border-radius:12px;padding:8px 0;flex:0 0 auto}
+.betopt.t1{border-color:rgba(56,211,159,.4)} .betopt.t1 .mx{background:rgba(56,211,159,.16);color:var(--up)}
+.betopt.t2{border-color:rgba(246,196,83,.4)} .betopt.t2 .mx{background:rgba(246,196,83,.16);color:var(--gold)}
+.betopt.t3{border-color:rgba(255,90,77,.5)} .betopt.t3 .mx{background:rgba(255,90,77,.18);color:var(--sk-red3)}
+.betopt.t1:hover{box-shadow:0 8px 20px rgba(56,211,159,.2)}
+.betopt.t2:hover{box-shadow:0 8px 20px rgba(246,196,83,.2)}
+.betopt.t3:hover{box-shadow:0 8px 20px rgba(255,90,77,.25)}
+.betopt .bi .bt{font-size:15px;font-weight:800}
+.betopt .bi .bs{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.betopt .bi .amt{font-size:12px;color:var(--gold);margin-top:3px;font-weight:700}
+.betopt .odds{margin-left:auto;text-align:right;font-size:10.5px;color:var(--ink3);flex:0 0 auto}
+
+/* 骰子動畫 */
+.dice{width:70px;height:70px;border-radius:16px;background:#fff;color:#B00610;display:grid;place-items:center;font-size:40px;font-weight:900;margin:6px auto 0;box-shadow:0 8px 22px rgba(0,0,0,.4);transition:transform .1s}
+.dice.sm{width:52px;height:52px;font-size:32px;margin:0}
+.dice.num{font-weight:900;font-family:"Helvetica Neue",Arial,sans-serif}
+.dice.sm.num{font-size:30px}
+.dice.sm.g{background:#e9fff5;color:#1c9963;box-shadow:0 6px 16px rgba(46,194,126,.35)}
+.dice.sm.b{background:#ffecef;color:#d63d4c;box-shadow:0 6px 16px rgba(255,91,106,.3)}
+.dicerow{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;min-height:52px;align-items:center}
+.incbanner{margin:12px 0 4px;padding:10px 13px;border-radius:12px;border-left:3px solid var(--up);background:rgba(46,194,126,.12);font-size:13.5px;color:#1c7a52}
+.incbanner b{color:#127a49}
+.incbanner.stk{border-left-color:var(--gold);background:rgba(184,134,11,.12);color:#8a6508}
+.incbanner.stk b{color:#8a6508}
+.incbanner.neg{border-left-color:var(--down);background:rgba(214,61,76,.12);color:#b02a3a}
+.incbanner.neg b{color:#b02a3a}
+.spwarn{margin:12px 0 2px;padding:11px 13px;border-radius:12px;border:1px solid rgba(214,61,76,.4);background:rgba(214,61,76,.1);font-size:13px;color:#b02a3a;line-height:1.6}
+.spwarn b{color:#b02a3a;font-size:15px}
+.yearbtns{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.rollbtn.ghost{background:rgba(255,255,255,.6);color:var(--sk-red3);border:1px solid rgba(227,6,19,.35);box-shadow:none;margin-top:0}
+.rollbtn.train-open{margin-top:14px;font-size:14px;padding:13px}
+.quitlife{display:block;width:100%;margin-top:16px;padding:11px;border-radius:12px;background:transparent;border:1px dashed var(--glassborder);color:var(--ink3);font-size:12.5px}
+.quitlife:hover{border-color:var(--sk-red3);color:var(--sk-red3)}
+.spbadge{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:99px;background:var(--gold);color:#fff;font-size:12px;font-weight:800;vertical-align:middle}
+.tbtip{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px;text-align:left}
+.trainbox{margin-top:16px;padding:16px 15px;border-radius:16px;background:rgba(0,0,0,.14);border:1px solid var(--glassborder);text-align:center}
+.trainbox .dicerow{margin-bottom:8px}
+.dice.roll{animation:shake .5s}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg) scale(1.06)}75%{transform:rotate(14deg) scale(1.06)}}
+
+/* bottom sheet 彈窗 */
+.sheetbg{position:fixed;inset:0;background:rgba(20,0,3,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.25s;z-index:60}
+.sheetbg.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;max-width:480px;margin:0 auto;transform:translateY(110%);transition:transform .3s cubic-bezier(.2,.9,.3,1);padding:20px 18px calc(24px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0}
+.sheet.show{transform:translateY(0)}
+.sheet .sh{display:flex;align-items:center;margin-bottom:14px}
+.sheet .sh .st{font-size:17px;font-weight:800}
+.sheet .sh .sx{margin-left:auto;font-size:22px;color:var(--ink3);cursor:pointer;line-height:1;padding:2px 6px}
+.sheet .desc{font-size:12.5px;color:var(--ink2);line-height:1.7;margin-bottom:14px}
+.dicebox{text-align:center;padding:6px 0 14px}
+.dicebox .res{font-size:13px;color:var(--gold);margin-top:12px;min-height:20px;font-weight:700}
+.rollbtn{width:100%;padding:15px;border-radius:15px;font-weight:800;font-size:15px;background:linear-gradient(90deg,var(--sk-red2),var(--sk-red3));color:#fff;margin-top:8px;box-shadow:0 8px 20px rgba(227,6,19,.35)}
+.rollbtn:disabled{opacity:.4;filter:grayscale(.6);box-shadow:none}
+.rollbtn .c{font-size:12px;opacity:.85;font-weight:600}
+
+.skills{display:flex;flex-direction:column;gap:11px}
+.skl{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:15px;border:1px solid var(--glassborder);background:var(--glass2)}
+.skl .ic{font-size:26px;flex:0 0 auto}
+.skl .info{flex:1;min-width:0}
+.skl .info .n{font-size:14px;font-weight:800}
+.skl .info .d{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.5}
+.skl .prog{font-size:11px;color:var(--ink3);margin-top:5px}
+.skl .prog b{color:var(--gold)}
+.skl .lv{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.skl .lv i{width:14px;height:5px;border-radius:99px;background:rgba(255,255,255,.14)}
+.skl .lv i.on{background:var(--gold)}
+.skl .up{flex:0 0 auto;width:40px;height:40px;border-radius:12px;background:linear-gradient(160deg,var(--sk-red),var(--sk-red2));color:#fff;font-size:22px;font-weight:900;display:grid;place-items:center;transition:.15s}
+.skl .up:disabled{opacity:.35;filter:grayscale(.7)}
+.skl .up.max{background:rgba(255,255,255,.1);font-size:11px;font-weight:700}
+.sheet .spline{text-align:center;font-size:13px;color:var(--ink2);margin-bottom:12px}
+.sheet .spline b{color:var(--gold);font-size:17px}
+/* ============ 質感 / 高級感升級 ============ */
+:root{--serif:"Noto Serif TC",serif}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(125% 85% at 50% -5%,transparent 58%,rgba(0,0,0,.4) 100%)}
+.wrap{position:relative;z-index:2}
+.glass{backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border-color:rgba(255,255,255,.13);box-shadow:0 26px 70px rgba(45,0,4,.55),inset 0 1px 0 rgba(255,255,255,.26),inset 0 0 0 1px rgba(255,255,255,.03)}
+.hero .big{font-weight:900;letter-spacing:1px}
+.hero .big .g{background:linear-gradient(180deg,#ffe6a3,#f3ba3d);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.ending .ti{letter-spacing:2px;background:linear-gradient(180deg,#fff,#ffd9d0);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.brandbar .prod .t1{letter-spacing:3px}
+.hero .kicker{color:#f3ba3d}
+.section-title{display:flex;align-items:center;gap:12px}
+.section-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(243,186,61,.55),transparent)}
+.nextbtn,.eb-main,.rollbtn{position:relative;overflow:hidden}
+.nextbtn::before,.eb-main::before,.rollbtn::before{content:"";position:absolute;inset:0 0 50% 0;background:linear-gradient(180deg,rgba(255,255,255,.28),transparent);pointer-events:none}
+#start .grid .pc{border-color:rgba(255,255,255,.11)}
+#start .grid .pc:hover{border-color:rgba(243,186,61,.45);box-shadow:0 14px 34px rgba(0,0,0,.42),inset 0 0 0 1px rgba(243,186,61,.16)}
+#start .grid .pc .pcgo{color:#f3ba3d;opacity:.85}
+.wcell.net{border-color:rgba(243,186,61,.3);background:linear-gradient(160deg,rgba(243,186,61,.1),rgba(243,186,61,.03))}
+.track{background:rgba(0,0,0,.4)}
+.brandbar .logo .mark{filter:drop-shadow(0 4px 12px rgba(227,6,19,.5))}
+.hud,.stage,.hero{position:relative}
+.stage::before,.hud::before{content:"";position:absolute;left:20px;right:20px;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);pointer-events:none}
+.betopt{overflow:hidden}
+.betopt::before{content:"";position:absolute;inset:0 0 55% 0;background:linear-gradient(180deg,rgba(255,255,255,.08),transparent);pointer-events:none}
+.choice{position:relative;overflow:hidden}
+
+.talents{margin:4px 0 14px;padding:12px 13px;border-radius:14px;background:rgba(0,0,0,.2);border:1px solid var(--glassborder)}
+.talents .tlt{font-size:11.5px;color:var(--ink2);margin-bottom:9px;text-align:center}
+.talents .tlt b{color:var(--gold)}
+.talents .tal{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;padding:6px 0;border-top:1px dashed rgba(255,255,255,.1)}
+.talents .tal:first-of-type{border-top:none}
+.talents .tal .ti2{color:var(--ink3)}
+.talents .tal .tr{font-size:11px;color:var(--ink3)}
+.talents .tal.on .ti2{color:#fff;font-weight:700}
+.talents .tal.on .tr{color:var(--up);font-weight:700}
+/* ============================ 明亮乾淨 · 淺色主題 ============================ */
+:root{
+  --ink:#2b1315;--ink2:#6d4c4f;--ink3:#a2878a;
+  --glass:rgba(255,255,255,.76);--glass2:rgba(255,255,255,.56);
+  --glassborder:rgba(180,60,66,.16);--glasshi:rgba(255,255,255,.9);
+  --gold:#b8860b;--shadow:0 16px 44px rgba(150,20,30,.14);
+}
+body{color:var(--ink);background:
+  radial-gradient(1100px 700px at 86% -10%,rgba(255,120,110,.18),transparent 55%),
+  radial-gradient(900px 700px at -2% 4%,rgba(227,6,19,.09),transparent 50%),
+  linear-gradient(170deg,#fff7f5 0%,#ffeeec 55%,#ffe4e2 100%);}
+body::after{background:radial-gradient(125% 85% at 50% -5%,transparent 64%,rgba(120,20,28,.055) 100%)}
+.glass{background:linear-gradient(180deg,var(--glass),var(--glass2));border:1px solid var(--glassborder);box-shadow:0 18px 50px rgba(150,20,30,.13),inset 0 1px 0 rgba(255,255,255,.85);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%)}
+.logo .txt .cn{color:var(--sk-red2)}
+.brandbar .prod .t1{color:var(--ink)}.brandbar .prod .t2,.brandbar .ver{color:var(--ink3)}.brandbar .ver{border-color:var(--glassborder)}
+.hero .big{color:var(--ink)}.hero .tagline{color:var(--ink2)}.hero .kicker{color:var(--sk-red)}
+.hero .big .r{color:var(--sk-red);-webkit-text-fill-color:var(--sk-red)}
+.hero .big .g{background:linear-gradient(180deg,#e0a52a,#b8860b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.ticker{color:var(--ink3)}.ticker b{color:#1c9963}.ticker .dn{color:#d63d4c}.combo{color:#b8860b}
+.seedbar input{background:rgba(255,255,255,.72);color:var(--ink);border-color:var(--glassborder)}
+.seedbar input::placeholder{color:#c3adb0}.seedbar label{color:var(--ink2)}
+.btn-mini{color:var(--ink2);background:rgba(255,255,255,.5);border-color:var(--glassborder)}
+.section-title{color:var(--ink2)}.section-title::after{background:linear-gradient(90deg,rgba(227,6,19,.35),transparent)}
+.foot{color:var(--ink3)}.foot .by{color:var(--sk-red2)}
+#start .grid .pc .pcinfo .nm{color:var(--ink)}#start .grid .pc .pcinfo .pcsub{color:var(--ink3)}#start .grid .pc .pcgo{color:var(--sk-red);opacity:1}
+#start .grid .pc:hover{border-color:rgba(227,6,19,.4);box-shadow:0 14px 30px rgba(150,20,30,.16)}
+.hud .who .nm{color:var(--ink)}.hud .who .tg{color:var(--sk-red)}.hud .clock{color:var(--ink3)}.hud .clock b{color:var(--ink)}
+.wcell{background:rgba(255,255,255,.58);border-color:var(--glassborder)}.wcell .k{color:var(--ink3)}.wcell .v{color:var(--ink)}
+.wcell.net{background:linear-gradient(160deg,rgba(184,134,11,.16),rgba(184,134,11,.05));border-color:rgba(184,134,11,.4)}.wcell.net .v{color:#b8860b}
+.neg{color:#d63d4c}.pos{color:#1c9963}
+.bar .bl{color:var(--ink2)}.bar .bl .mono{color:var(--ink)}.track{background:rgba(0,0,0,.08);border-color:rgba(0,0,0,.06)}
+.skbar{border-top-color:rgba(0,0,0,.09)}.skbar .sp{color:var(--ink2)}
+.skbtn{color:var(--ink);background:rgba(255,255,255,.6);border-color:var(--glassborder)}
+.beat-head .yr{color:var(--ink2);background:rgba(255,255,255,.5);border-color:var(--glassborder)}
+.beat-head .tt{color:var(--ink)}.beat-head .chap{color:var(--sk-red)}
+.story{color:#3a2224}.story .hl{color:#b8860b}
+.choice{background:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.52));border-color:var(--glassborder)}
+.choice .cl{color:var(--ink)}.choice .ch{color:var(--ink3)}.choice:hover{background:rgba(255,235,234,.9);border-color:var(--sk-red)}
+.choice .arrow{color:var(--sk-red)}
+.stage::before,.hud::before{background:linear-gradient(90deg,transparent,rgba(180,60,66,.18),transparent)}
+.betwrap .bl{color:var(--ink2)}
+.betopt{background:linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.52));border-color:var(--glassborder)}
+.betopt::before{display:none}.betopt .bi .bt{color:var(--ink)}.betopt .bi .bs{color:var(--ink3)}.betopt .bi .amt{color:#b8860b}
+.betopt .odds{color:var(--ink3)}.betopt .odds b{color:var(--ink)}
+.result{color:#3a2224}.result .deltas span{color:var(--ink2)}
+.log .lt{color:var(--ink3)}.log .li{color:var(--ink2);border-top-color:rgba(0,0,0,.08)}.log .li .yr{color:var(--sk-red)}
+.ending .ti{color:var(--ink);background:none;-webkit-text-fill-color:var(--ink)}
+.ending .tx{color:#3a2224}.ending .rank{color:#b8860b}.ending .combo2{color:var(--ink3)}
+.ending .elogo div{color:var(--sk-red2)}
+.final .fc{background:rgba(255,255,255,.58);border-color:var(--glassborder)}.final .fc .k{color:var(--ink3)}.final .fc .v{color:var(--ink)}.final .fc.big .v{color:#b8860b}
+.sheet .sh .st{color:var(--ink)}.sheet .sh .sx{color:var(--ink3)}.sheet .desc{color:var(--ink2)}.sheet .spline{color:var(--ink2)}
+.dicebox .res{color:#b8860b}
+.skl{background:rgba(255,255,255,.55);border-color:var(--glassborder)}.skl .info .n{color:var(--ink)}.skl .info .d{color:var(--ink3)}
+.skl .lv i{background:rgba(0,0,0,.1)}.skl .lv i.on{background:#b8860b}
+.talents{background:rgba(255,255,255,.55);border-color:var(--glassborder)}.talents .tlt{color:var(--ink2)}.talents .tal{border-top-color:rgba(0,0,0,.08)}.talents .tal .ti2{color:var(--ink3)}.talents .tal .tr{color:var(--ink3)}.talents .tal.on .ti2{color:var(--ink)}
+.sheetbg{background:rgba(80,10,14,.35)}
+.eb-share{color:var(--ink);background:rgba(255,255,255,.62);border-color:var(--glassborder)}
+.eb-alt{color:var(--ink2);border-color:var(--glassborder)}
+.toast{color:#9a7b0a;background:rgba(184,134,11,.12);border-color:rgba(184,134,11,.4)}
+.nextbtn,.eb-main,.rollbtn{color:#fff}
+.dice{color:#B00610}
+/* ===== 放大字級,清楚明瞭 ===== */
+.hero .big{font-size:28px}.hero .tagline{font-size:13px;line-height:1.5}.hero .kicker{font-size:11px;letter-spacing:5px}
+.section-title{font-size:13px;margin:4px 6px 10px}
+#start .grid .pc{padding:13px 16px}#start .grid .pc .pcinfo .nm{font-size:17px}#start .grid .pc .pcinfo .pcsub{font-size:12.5px}#start .grid .pc .em{font-size:30px}
+.hud .who .nm{font-size:18px}.hud .who .tg{font-size:12px}.hud .clock{font-size:13px}.hud .clock b{font-size:17px}
+.wcell .k{font-size:11px}.wcell .v{font-size:17px}
+.bar .bl{font-size:12.5px}.skbar .sp{font-size:13px}.skbtn{font-size:13.5px;padding:9px 13px}
+.beat-head .tt{font-size:20px}.beat-head .yr,.beat-head .chap{font-size:12px}
+.story{font-size:16.5px;line-height:1.95}
+.choice{padding:16px 17px}.choice .cl{font-size:16px}.choice .ch{font-size:13px}
+.betwrap .bl{font-size:13px;line-height:1.7}
+.betopt{padding:15px 16px}.betopt .mx{font-size:24px;width:56px}.betopt .bi .bt{font-size:16.5px}.betopt .bi .bs{font-size:12.5px}.betopt .odds{font-size:11.5px}
+.result{font-size:15.5px;line-height:1.8}
+.ending .ti{font-size:30px}.ending .tx{font-size:16px;line-height:2.05}.ending .rank{font-size:14px}
+.final .fc .k{font-size:12px}.final .fc .v{font-size:20px}.final .fc.big .v{font-size:27px}
+.sheet .sh .st{font-size:18px}.sheet .desc{font-size:13.5px;line-height:1.8}
+.skl .info .n{font-size:15px}.skl .info .d{font-size:12px}.spline{font-size:13.5px}
+.nextbtn{font-size:16px;padding:17px}
+/* ===== 精簡上方面板,讓故事與選項為主 ===== */
+#game .hud{position:static;padding:12px 14px}
+.hud .row1{margin-bottom:8px}
+.wealth2{margin-bottom:9px;padding:9px 13px;border-radius:13px;background:linear-gradient(160deg,rgba(184,134,11,.15),rgba(184,134,11,.04));border:1px solid rgba(184,134,11,.32)}
+.wealth2 .wnet{display:flex;align-items:baseline;justify-content:space-between}
+.wealth2 .wk{font-size:12.5px;color:var(--ink3);font-weight:600}
+.wealth2 .wv{font-size:23px;font-weight:900;color:#b8860b}
+.wealth2 .wmini{font-size:12.5px;color:var(--ink2);margin-top:5px;padding-top:6px;border-top:1px dashed rgba(0,0,0,.1)}
+.wealth2 .wmini b{color:var(--ink);font-weight:700}
+.wealth2 .wmini .neg{color:#d63d4c}
+.hud .bars{gap:9px}
+.hud .bar .bl{font-size:11.5px;margin-bottom:3px}
+.hud .track{height:6px}
+.stage{padding:18px 18px 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- brand bar with Shin Kong logo -->
+  <div class="brandbar">
+    <div class="logo">
+      <div class="txt"><div class="cn">股海人生</div></div>
+    </div>
+    <div class="prod"><div class="t2">STOCKLIFE · 模擬股民</div></div>
+  </div>
+
+  <!-- START -->
+  <div id="start">
+    <div class="glass hero">
+      <div class="big"><span class="g">股神</span>養成計畫</div>
+      <div class="subttl">股海人生 · StockLife</div>
+      <div class="tagline">買股票、拚身家——看你能不能從小散戶,一路把自己<span style="color:var(--sk-red);font-weight:700">養成股市大神</span>。</div>
+      <div class="ticker"><span>大盤 <b>▲</b></span><span>台積電 <b>▲2.1%</b></span><span>AI股 <b>▲8.3%</b></span><span>你的心臟 <span class="dn">▼</span></span></div>
+      <div class="combo" id="comboLine">— 超過 1,000 種結局組合,沒有人的人生會一樣 —</div>
+      <div class="seedbar">
+        <label>你的名字</label>
+        <input id="nameInput" placeholder="輸入你的名字(可留空)" spellcheck="false" maxlength="12">
+      </div>
+    </div>
+
+    <div class="section-title">選擇你的出身</div>
+    <div class="grid" id="roster"></div>
+
+    <div class="glass" style="padding:13px 16px;margin-top:14px">
+      <div class="seedbar" style="margin:0">
+        <label>命運編號</label>
+        <input id="seedInput" spellcheck="false">
+        <button class="btn-mini" id="seedRand">🎲 換一個</button>
+      </div>
+      <div style="font-size:11px;color:var(--ink3);margin-top:8px;text-align:center">系統已幫你抽好一組命運編號(這局的存檔碼)。想換就按 🎲 或自己輸入;連同分享連結傳給朋友,對方就能走一樣的命運。</div>
+    </div>
+
+    <div class="foot">
+      本作純屬虛構娛樂體驗,不構成任何投資建議或招攬。投資有風險,人生更是。
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="game">
+    <div class="glass hud">
+      <div class="row1">
+        <div class="who"><span class="em" id="hEm">🙂</span><div><div class="nm" id="hNm">—</div><div class="tg" id="hTg">—</div></div></div>
+        <div class="hdright">
+          <div class="ovr"><span class="ovrn" id="hOvr">—</span><span class="ovrl">操盤戰力</span></div>
+          <div class="clock"><b id="hYear">2026</b> 年 · <span id="hAge">—</span> 歲</div>
+        </div>
+      </div>
+      <div class="wealth2">
+        <div class="wnet"><span class="wk">資本額</span><span class="wv mono" id="wNet">—</span></div>
+        <div class="wmini">現金 <b class="mono" id="wCash">—</b> · 持股 <b class="mono" id="wStock">—</b> · 負債 <b class="mono neg" id="wDebt">—</b></div>
+      </div>
+      <div class="phasebar">
+        <div class="phz"><span class="phname" id="hPhase">—</span><span class="phnext" id="hPhaseNext"></span></div>
+        <div class="phsegs" id="hPhaseSegs"></div>
+      </div>
+      <div class="bars">
+        <div class="bar"><div class="bl"><span>🧠 心態</span><span class="mono" id="bMindV">—</span></div><div class="track"><div class="fill mind" id="bMind"></div></div></div>
+        <div class="bar"><div class="bl"><span>❤️ 關係</span><span class="mono" id="bRelV">—</span></div><div class="track"><div class="fill rel" id="bRel"></div></div></div>
+        <div class="bar"><div class="bl"><span>🎭 名聲</span><span class="mono" id="bFameV">—</span></div><div class="track"><div class="fill fame" id="bFame"></div></div></div>
+      </div>
+    </div>
+    <div class="glass stage" id="stage"></div>
+    <div class="glass log" id="logBox" style="display:none"><div class="lt">人 生 紀 事</div><div id="logList"></div></div>
+    <div class="foot"><button class="btn-mini" id="quitBtn">← 放棄這一生,重選出身</button></div>
+  </div>
+</div>
+
+<!-- bottom sheets -->
+<div class="sheetbg" id="sheetBg"></div>
+<div class="glass sheet" id="introSheet">
+  <div class="sh"><span class="st"><span id="introEm"></span> <span id="introRole"></span></span><span class="sx" data-close>✕</span></div>
+  <div class="introtag" id="introTag"></div>
+  <div class="desc" id="introDesc" style="font-size:14px;color:var(--ink)"></div>
+  <div class="introflaw" id="introFlaw"></div>
+  <div class="introstats" id="introStats"></div>
+  <button class="rollbtn" id="introStart">踏入股海 →</button>
+</div>
+
+<script>
+/* ============================================================
+   股海人生 · 股神養成計畫  — 引擎 v2(場景圖分支 + 組合式結局)
+   ============================================================ */
+function hashSeed(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return (h>>>0)||123456789;}
+function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296;};}
+let RNG=Math.random,SEED='';
+function setSeed(s){SEED=s;RNG=s?mulberry32(hashSeed(s)):Math.random;}
+/* 友善的命運編號(吉祥詞 + 數字,好記不亂碼) */
+const SEEDWORDS=['招財','旺旺','牛市','鴻運','發發','登峰','金牛','長紅','聚寶','翻身','股神','豐收','大發','錦鯉','旗開','紅盤','進寶','滿貫','開運','點金'];
+function genSeed(){return SEEDWORDS[Math.floor(Math.random()*SEEDWORDS.length)]+(Math.floor(1000+Math.random()*9000));}
+function pickWeighted(list){const tot=list.reduce((a,o)=>a+(o.w||1),0);let r=RNG()*tot;for(const o of list){r-=(o.w||1);if(r<=0)return o;}return list[list.length-1];}
+
+let CHARS=[],S=null,CUR=null,CURID=null,AWAIT=false,LAST_END=null;
+
+const commaInt=str=>str.replace(/\B(?=(\d{3})+(?!\d))/g,',');   /* 整數部分加千分位逗號 */
+const unitStr=(val,digits,suf)=>{let t=val.toFixed(digits);if(t.indexOf('.')>=0)t=t.replace(/\.?0+$/,'');const p=t.split('.');return commaInt(p[0])+(p[1]?'.'+p[1]:'')+suf;};  /* 去掉多餘的 .0 */
+const fmt=n=>{
+  const neg=n<0;n=Math.abs(Math.round(n));let s;
+  if(n>=100000000)s=unitStr(n/100000000,2,'億');
+  else if(n>=10000)s=unitStr(n/10000,(n>=1000000?0:1),'萬');
+  else s=commaInt(String(n));
+  return (neg?'-':'')+s;
+};
+const clamp=v=>Math.max(0,Math.min(100,v));
+const net=s=>s.cash+s.stock-s.debt;
+
+/* 技能系統(5 種,每種 5 級) */
+const SKILLS=[
+ {id:'insight',ic:'🔭',n:'眼光',max:10,d:'投資成功率每級 +4%'},
+ {id:'finiq',ic:'📈',n:'財商',max:10,d:'投資獲利每級 +15%'},
+ {id:'disc',ic:'🛡️',n:'紀律',max:10,d:'投資虧損每級 −12%'},
+ {id:'mindful',ic:'🧘',n:'心法',max:10,d:'負面事件的心態耗損每級 −15%'},
+ {id:'network',ic:'🤝',n:'人脈',max:10,d:'關係提升每級 +20%'}
+];
+const lvl=id=>(S&&S.skills&&S.skills[id])||0;
+/* 下注倍數三級距:用「成功率%」決定成敗(技能可提高成功率),倍數越大投入越多、報酬越高 */
+const BET_TIERS=[
+ {mult:1,cls:'t1',label:'保守',sub:'投入本金 ×1',baseWin:0.72,winMult:0.55,lossMult:0.45,mgood:3,mbad:5},
+ {mult:3,cls:'t2',label:'積極',sub:'投入本金 ×3',baseWin:0.50,winMult:1.5,lossMult:1.1,mgood:5,mbad:9},
+ {mult:5,cls:'t3',label:'梭哈',sub:'投入本金 ×5',baseWin:0.33,winMult:3.2,lossMult:2.0,mgood:7,mbad:15}
+];
+function betWinP(t){return Math.min(0.95,Math.max(0.05,t.baseWin+0.04*lvl('insight')));}
+const DICEFACE=['','⚀','⚁','⚂','⚃','⚄','⚅'];
+/* 財富自由臨界值:統一設為「起始可投資本金 × 6」,讓各角色翻身難度一致 */
+const RETIRE_AT={richkid:150000000,whitecollar:28000000,freshgrad:11000000,techbro:90000000,founder:72000000};
+/* 過了退休門檻仍不退休,續玩時可能遇到的意外(讓退休成為真的抉擇) */
+const MISFORTUNES=[
+ {ic:'🏥',t:'突發重病',x:'一場大病來得毫無預兆,龐大的醫藥費像雪片般飛來。你才驚覺,健康才是最貴的資產。',pct:0.25,mind:-14},
+ {ic:'🚑',t:'意外車禍',x:'一場車禍讓你住院休養,還得賠償對方一大筆。人生的無常,不會等你準備好。',pct:0.20,mind:-10,rel:-4},
+ {ic:'🦴',t:'職業傷害',x:'長期的勞損讓身體亮起紅燈,你不得不停下腳步、砸錢治療。錢再多,也買不回硬朗的身子。',pct:0.16,mind:-12},
+ {ic:'⚖️',t:'官司纏身',x:'一紙訴訟找上門,律師費與和解金像流水一樣淌出去,名聲也受了損。',pct:0.22,mind:-10,fame:-8},
+ {ic:'🕳️',t:'投資詐騙',x:'你一時輕信,被一個精心包裝的騙局坑走一大筆。越有錢,越是騙徒眼中的肥羊。',pct:0.30,mind:-12},
+ {ic:'👨‍👩‍👧',t:'家人急難',x:'家裡突然出了急事,你義不容辭扛下一大筆開銷。錢花掉了,但親情更緊了。',pct:0.18,rel:8,mind:-6},
+ {ic:'📉',t:'黑天鵝暴跌',x:'市場毫無預警地崩了,你的持股一夕重挫。市場永遠會在你最鬆懈時給你一記重拳。',pct:0.34,mind:-12}
+];
+/* 過門檻續玩後,每一年遇到意外的機率(逐年計算,所以要壓低) */
+const MISFORTUNE_P=0.12;
+/* 平凡年份的隨機小敘述,讓每一年都有不同的味道 */
+const YEAR_FLAVORS=[
+ '這一年很平淡,你照常上下班、看盤、過日子。',
+ '大盤上上下下,你學會了不被每天的紅綠燈牽著走。',
+ '朋友聚會又聊起誰誰誰賺了多少,你笑笑沒接話。',
+ '這一年你多讀了幾本書,對市場的耐性又長了一點。',
+ '生活沒什麼大事,帳戶數字慢慢往你想要的方向挪。',
+ '你發現真正難的不是賺錢,而是穩穩地不亂動。',
+ '又過了一個年頭,鏡子裡的自己多了一分從容。',
+ '這一年市場很無聊,無聊往往是好事。'
+];
+/* 一般年份的隨機生活事件(可無限延伸)。U = 一年收入,作為金額的縮放單位。 */
+const GEN_LIFE=[
+ (U)=>({ic:'🎰',t:'賭局的誘惑',x:'牌桌、地下期指、朋友揪的一場大的——賭注不小,贏了痛快,輸了心痛。',c:[
+   {l:'豪氣賭一把',d:{},set:{gambler:true},roll:[
+     {w:4,d:{cash:U*1.4,mind:-4,fame:3},log:'手氣爆棚,你贏了一筆,眾人簇擁,飄飄然。',mood:'good'},
+     {w:6,d:{cash:-U*1.1,mind:-12},log:'莊家的水太深,你一夜輸掉大半年的積蓄。',mood:'bad'}]},
+   {l:'看清就是賭博,轉身離開',d:{mind:6,fame:-2},log:'你按住了衝動,掃了朋友的興,卻守住了荷包。'}]}),
+ (U)=>({ic:'✈️',t:'出國散心的念頭',x:'忙到快窒息,你動了出國走走的念頭——豪華一點,還是省一點?',c:[
+   {l:'來一趟豪華旅行',d:{cash:-U*0.7,mind:12,rel:8,fame:3},log:'你砸錢玩了一趟大的,身心充飽電,回來荷包扁了一圈。',mood:'good'},
+   {l:'國內小旅行就好',d:{cash:-U*0.15,mind:5},log:'你選了輕巧的小旅行,錢花得少,也算換了口氣。'}]}),
+ (U)=>({ic:'🚗',t:'想換台好車',x:'看上一台不便宜的車,面子與里子在心裡拉扯。',c:[
+   {l:'犒賞自己,直接入手',d:{cash:-U*0.9,mind:10,fame:6},log:'新車入手,開起來意氣風發,代價是一大筆錢。',mood:'good'},
+   {l:'舊車還能開,先不換',d:{mind:2,fame:-3},log:'你務實地繼續開舊車,存下了錢,只是同儕間顯得樸素。'}]}),
+ (U)=>({ic:'💼',t:'副業投資的機會',x:'有人拉你合資一門生意,要投一筆本錢,回報看得到也看得到風險。',c:[
+   {l:'投一筆下去經營',d:{cash:-U*0.5},set:{entrepreneur:true},roll:[
+     {w:5,d:{cash:U*1.6,fame:6,mind:3},log:'生意做起來了,這筆投資翻了好幾倍。',mood:'good'},
+     {w:5,d:{cash:-U*0.3,mind:-6},log:'市場不如預期,投進去的錢大半打了水漂。',mood:'bad'}]},
+   {l:'專心本業,不分心',d:{mind:3,fame:-2},log:'你守住本業,少了一次翻本機會,但也少了風險。'}]}),
+ (U)=>({ic:'🏥',t:'家人重病',x:'家人病倒,龐大的醫療費壓下來,考驗你的荷包與孝心。',c:[
+   {l:'不惜代價,全力醫治',d:{cash:-U*1.0,rel:12,mind:-4},log:'你砸下重金全力救治,錢花掉了,親情卻更緊了。',mood:'good'},
+   {l:'在能力範圍內盡力',d:{cash:-U*0.3,rel:-4,mind:2},log:'你量力而為、問心無愧,但親戚間仍有些微詞。'}]}),
+ (U)=>({ic:'🤝',t:'朋友周轉借錢',x:'交情不錯的朋友開口借一大筆錢周轉,借了怕收不回,不借傷感情。',c:[
+   {l:'慷慨借出',d:{cash:-U*0.6,rel:8},log:'你二話不說幫了忙,這份義氣朋友記在心裡。',mood:'good'},
+   {l:'婉拒,先顧好自己',d:{rel:-8,mind:2},log:'你守住了現金流,交情卻蒙上一層陰影。'}]}),
+ (U)=>({ic:'🎓',t:'砸錢投資自己',x:'一堂高階課程/證照學費不便宜,但能拓展競爭力與人脈。',c:[
+   {l:'報名高階進修',d:{cash:-U*0.5,fame:8,mind:3},log:'你花大錢進修,眼界與人脈都拓寬了。',mood:'good'},
+   {l:'靠自己摸索就好',d:{mind:2,fame:-3},log:'你省下學費靠自學,慢一點,但踏實。'}]}),
+ (U)=>({ic:'💎',t:'精品的心動',x:'一件保值的精品/名錶讓你心動,入手是享受也是一筆大錢。',c:[
+   {l:'入手,犒賞也保值',d:{cash:-U*0.6,fame:8,mind:4},log:'你把它收進櫃裡,面子與心情都滿足,錢包則瘦了。',mood:'good'},
+   {l:'忍住,不跟風',d:{mind:2,fame:-2},log:'你壓下慾望,把錢留著,只是少了點虛榮的滿足。'}]}),
+ (U)=>({ic:'🏡',t:'房子想翻修',x:'住了多年的家該整理了,大動一場很花錢,將就又住得不舒服。',c:[
+   {l:'好好整修一番',d:{cash:-U*0.7,mind:6,rel:5},log:'你砸錢把家翻新,住得舒服,家人也開心。',mood:'good'},
+   {l:'簡單修一修就好',d:{cash:-U*0.15,mind:2},log:'你只做了必要的修繕,省了錢,勉強夠住。'}]}),
+ (U)=>({ic:'📈',t:'加碼看好的標的',x:'你研究很久的標的出現進場點,想額外加碼一筆。',c:[
+   {l:'果斷加碼一筆',d:{},roll:[
+     {w:5,d:{cash:U*1.0,mind:3,fame:2},log:'你看得準,這一筆加碼收穫豐厚。',mood:'good'},
+     {w:5,d:{cash:-U*0.6,mind:-5},log:'行情反轉,這筆加碼套在了高點。',mood:'bad'}]},
+   {l:'按兵不動,續抱就好',d:{mind:2,fame:-1},log:'你守住紀律不追高,錯過的那波也不強求。'}]}),
+ (U)=>({ic:'🍼',t:'給孩子的栽培',req:s=>s.flags&&s.flags.kids,x:'孩子的教育與栽培是一筆長期的大開銷,給到什麼程度由你決定。',c:[
+   {l:'給孩子最好的資源',d:{cash:-U*0.7,rel:10,mind:3},log:'你不惜成本栽培孩子,家庭關係更緊密。',mood:'good'},
+   {l:'量力栽培就好',d:{cash:-U*0.2,rel:3,mind:-2},log:'你量力而為,心裡總覺得能再多給一點。'}]}),
+ (U)=>({ic:'🎉',t:'人情場面',x:'親友的婚喪喜慶接連而來,紅白包與場面都是一筆不小的開銷。',c:[
+   {l:'場面做足,禮數周到',d:{cash:-U*0.4,rel:8,fame:4},log:'你把人情做得漂亮,關係與名聲都加了分,錢也花了不少。',mood:'good'},
+   {l:'低調隨意,量力而為',d:{cash:-U*0.05,rel:-3,mind:2},log:'你把人情壓到最低,省了錢,卻也被說小氣。'}]})
+];
+/* 一般年份偶爾出現的「投資機會」標題(用『判斷/眼光』而非賭博的語氣) */
+const GEN_BET_TITLES=[
+ {t:'產業輪動的機會',x:'資金開始往某個族群移動,你嗅到一絲熟悉的味道。要不要順勢布局?'},
+ {t:'市場的一次修正',x:'大盤回檔,好公司也跟著被錯殺。危機還是轉機,取決於你的眼光。'},
+ {t:'題材發酵中',x:'一個新趨勢正被市場追捧,你研究過後,決定要參與多少。'},
+ {t:'難得的低估',x:'你追蹤許久的標的終於跌到你認為合理的價位,機會不等人。'},
+ {t:'趨勢成形',x:'長線的趨勢逐漸清晰,你思考著要用多大的部位去參與。'}
+];
+/* 開局狀況:每局隨機一種,微調起始資金與狀態,讓每次開場都不太一樣。cashU = 幾年份的收入 */
+const OPENINGS=[
+ {t:'平順的起點',x:'一切照計畫進行,你穩穩站上起跑線。'},
+ {t:'景氣正熱',x:'你入場這年市場一片樂觀,錢似乎特別好賺——但人人都這麼想時,風險也在累積。',mind:5,fame:3},
+ {t:'景氣寒冬',x:'你偏偏在景氣最冷時起步,開局艱難,卻也逼出你的謹慎。',cashU:-0.6,mind:-3},
+ {t:'一筆意外之財',x:'一份遲來的獎金入袋,你的起步資金比預期多了一些。',cashU:1.5,mind:3},
+ {t:'開局先破了個財',x:'起步前一場突發花費,讓你的現金比預期少了一截。',cashU:-1.2,mind:-2},
+ {t:'志得意滿',x:'最近諸事順遂,你信心滿滿地進場——只是過度自信,往往是虧損的開始。',mind:6,fame:4},
+ {t:'低潮中出發',x:'你在一段低潮裡決定改變,帶著點不服輸的倔強起步。',mind:-4,rel:-2,fame:3},
+ {t:'貴人看好',x:'一位前輩很看好你,替你引薦了些人脈,起步時名聲響亮了點。',fame:6,rel:4}
+];
+
+/* ---------- 啟動畫面 ---------- */
+function roleOf(c){const parts=c.tag.split('·');return (parts[1]||c.tag).trim();}
+let PENDING=null;
+function openIntro(c){
+  PENDING=c;
+  document.getElementById('introEm').textContent=c.emoji;
+  document.getElementById('introRole').textContent=roleOf(c);
+  document.getElementById('introTag').textContent=c.tag;
+  document.getElementById('introDesc').textContent=c.desc;
+  document.getElementById('introFlaw').innerHTML='⚠️ 弱點:<b>'+c.flaw+'</b>';
+  document.getElementById('introStats').innerHTML=`💰 起始資本 <b>${fmt(net(c.start))}</b>${c.start.debt?' · 負債 '+fmt(c.start.debt):''} · ${c.start.age} 歲`;
+  openSheet('introSheet');
+}
+function buildStart(){
+  const r=document.getElementById('roster');r.innerHTML='';
+  CHARS.forEach(c=>{
+    const role=roleOf(c);
+    const el=document.createElement('button');el.className='glass pc';
+    el.innerHTML=`<span class="em">${c.emoji}</span>
+      <div class="pcinfo"><div class="nm">${role}</div><div class="pcsub">起始資本 <span class="mono" style="color:var(--gold)">${fmt(net(c.start))}</span> · ${c.start.age} 歲</div></div>
+      <span class="pcgo">→</span>`;
+    el.onclick=()=>openIntro(c);r.appendChild(el);
+  });
+  const si=document.getElementById('seedInput');if(si&&!si.value.trim())si.value=genSeed();   // 先給一組預設命運編號
+}
+document.getElementById('seedRand').onclick=()=>{document.getElementById('seedInput').value=genSeed();};
+
+/* ---------- 開始 ---------- */
+let PNAME='';
+function startGame(c){
+  let seed=document.getElementById('seedInput').value.trim();
+  if(!seed){seed=genSeed();}
+  setSeed(seed);
+  const nm=(document.getElementById('nameInput').value||'').trim();
+  PNAME=nm||c.name;
+  CUR=c;CURID=c.id;
+  S=JSON.parse(JSON.stringify(c.start));
+  S.flags={};S.log=[];S.scene=c.first;S.sp=0;S.skills={};S.skillProg={};S.diceRolls=0;
+  S.retireOffered=false;S.retired=false;S.bankrupt=false;S.pendingScene=null;S.retireLatch=false;S.lastIncome=null;S.resume=null;
+  /* === 每局不一樣:開局狀況 + 里程碑順序洗牌 === */
+  const op=OPENINGS[Math.floor(RNG()*OPENINGS.length)];
+  S.cash=Math.max(0,Math.round(S.cash+(op.cashU||0)*(c.income||100000)));
+  if(op.mind)S.mind=clamp(S.mind+op.mind);if(op.rel)S.rel=clamp(S.rel+op.rel);if(op.fame)S.fame=clamp(S.fame+op.fame);
+  S.openingLine=op.t+' — '+op.x;
+  const mid=(c.mid||[]).slice();
+  for(let i=mid.length-1;i>0;i--){const j=Math.floor(RNG()*(i+1));const tmp=mid[i];mid[i]=mid[j];mid[j]=tmp;}   // 洗牌
+  if(mid.length>2&&RNG()<0.45)mid.splice(Math.floor(RNG()*mid.length),1);                                     // 隨機丟掉一個
+  S.mile=['start','bull'].concat(mid,['gamble','crash']);
+  S.mainSet=new Set(['bull','gamble','crash'].concat(c.mid||[]));
+  S.mileIdx=0;S.ages={start:S.age};let aa=S.age;
+  for(let i=1;i<S.mile.length;i++){aa+=2+Math.floor(RNG()*4);S.ages[S.mile[i]]=aa;}                            // 里程碑年齡:每次也不同
+  S.lastBetAge=S.age;S.dayIdx=0;S.daysThisYear=0;
+  document.getElementById('start').style.display='none';
+  document.getElementById('game').style.display='block';
+  document.getElementById('hEm').textContent=c.emoji;
+  document.getElementById('hNm').textContent=PNAME;
+  document.getElementById('hTg').textContent=roleOf(c);   // 只顯示身分,年齡以上方 HUD 為準(避免顯示開局年齡造成矛盾)
+  window.scrollTo(0,0);renderHUD();renderScene();
+}
+
+function renderHUD(){
+  document.getElementById('hYear').textContent=S.year;
+  document.getElementById('hAge').textContent=S.age;
+  document.getElementById('wCash').textContent=fmt(S.cash);
+  document.getElementById('wStock').textContent=fmt(S.stock);
+  document.getElementById('wDebt').textContent=S.debt>0?fmt(S.debt):'0';
+  const nn=net(S);const ne=document.getElementById('wNet');ne.textContent=fmt(nn);ne.style.color=nn>=0?'#b8860b':'#d63d4c';
+  setBar('Mind',S.mind);setBar('Rel',S.rel);setBar('Fame',S.fame);
+  const ov=document.getElementById('hOvr');if(ov)ov.textContent=calcOVR();
+  renderPhase();
+  const sp=document.getElementById('hSP');if(sp)sp.textContent=S.sp||0;
+  const dot=document.getElementById('skDot');if(dot)dot.style.display=(S.sp>0)?'inline-block':'none';
+}
+function setBar(id,v){v=clamp(v);document.getElementById('b'+id).style.width=v+'%';document.getElementById('b'+id+'V').textContent=Math.round(v);}
+/* 操盤戰力:純能力值(技能 + 心態/關係/名聲),跟錢無關——錢是結果,戰力是實力。30~99 */
+function calcOVR(){let t=0;SKILLS.forEach(s=>t+=lvl(s.id));const q=stateQuality();return Math.round(30+(t/(SKILLS.length*10))*55+q*14);}
+/* 人生階段:看資本額佔「財富自由門檻」的比例(散戶→…→股市傳奇) */
+const PHASES=['韭菜散戶','小資操盤手','中實戶','準大戶','財富自由','股市傳奇'];
+const PHASE_THR=[0,0.1,0.3,0.6,1.0,2.0];
+function renderPhase(){
+  const T=RETIRE_AT[CURID]||Infinity;const nn=net(S);const r=(isFinite(T)&&T>0)?nn/T:0;
+  let i=0;for(let k=0;k<PHASE_THR.length;k++){if(r>=PHASE_THR[k])i=k;}
+  const pn=document.getElementById('hPhase');if(pn)pn.textContent=PHASES[i];
+  const nx=document.getElementById('hPhaseNext');
+  if(nx){if(i<PHASES.length-1){const need=Math.max(0,Math.round(PHASE_THR[i+1]*T)-nn);nx.textContent=`距「${PHASES[i+1]}」還差 ${fmt(need)}`;}else nx.textContent='已達頂點 · 股神級';}
+  const segEl=document.getElementById('hPhaseSegs');
+  if(segEl){let html='';for(let k=0;k<PHASES.length;k++){let w=0;if(k<i)w=100;else if(k===i){const lo=PHASE_THR[k],hi=(k<PHASES.length-1?PHASE_THR[k+1]:PHASE_THR[k]*2);w=Math.max(8,Math.min(100,(r-lo)/((hi-lo)||1)*100));}html+=`<span class="phseg"><i style="width:${w}%"></i></span>`;}segEl.innerHTML=html;}
+}
+/* 年紀逐年遞增動畫(一歲一歲跳) */
+let ageTimer=null;
+function animateAge(fromA,fromY,toA,toY){
+  if(ageTimer){clearInterval(ageTimer);ageTimer=null;}
+  const hA=document.getElementById('hAge'),hY=document.getElementById('hYear');
+  let a=fromA,y=fromY;hA.textContent=a;hY.textContent=y;
+  if(a>=toA){hA.textContent=toA;hY.textContent=toY;return;}
+  ageTimer=setInterval(()=>{
+    a++;y++;hA.textContent=a;hY.textContent=y;
+    hA.style.color='var(--sk-red)';setTimeout(()=>{hA.style.color='';},120);
+    if(a>=toA){clearInterval(ageTimer);ageTimer=null;hA.textContent=toA;hY.textContent=toY;}
+  },200);
+}
+
+function applyDelta(d){if(!d)return;for(const k in d){let v=d[k];if(k==='mind'&&v<0)v*=Math.max(0.1,1-0.15*lvl('mindful'));if(k==='rel'&&v>0)v*=(1+0.2*lvl('network'));if(k==='mind'||k==='rel'||k==='fame')S[k]=clamp(S[k]+v);else S[k]=(S[k]||0)+v;}if(S.cash<0){S.debt=(S.debt||0)-S.cash;S.cash=0;}}
+function applySet(set){if(!set)return;for(const k in set){const v=set[k];if(typeof v==='string'&&v[0]==='+')S.flags[k]=(S.flags[k]||0)+(+v.slice(1));else S.flags[k]=v;}}
+function deltaText(d){const map={cash:'現金',stock:'持股',debt:'負債',mind:'心態',rel:'關係',fame:'名聲'};const money=['cash','stock','debt'];const parts=[];for(const k in d){if(!d[k])continue;const up=d[k]>0;const val=money.includes(k)?fmt(Math.abs(d[k])):Math.abs(d[k]);const good=(k==='debt')?!up:up;parts.push(`<span style="color:${good?'var(--up)':'var(--down)'}">${map[k]} ${up?'+':'−'}${val}</span>`);}return parts.join('  ');}
+
+/* ---------- 場景 ---------- */
+function sceneHead(sc){return `<div class="beat-head">${sc.chap?`<span class="chap">${sc.chap}</span>`:''}<span class="yr">${S.year} 年 · ${S.age}歲</span><span class="tt">${sc.t}</span></div>`;}
+function incomeBanner(){
+  let h='';
+  if(S.lastIncome){const li=S.lastIncome;
+    h+= li.inc>=0
+      ?`<div class="incbanner">💰 <b>${li.situ||'這一年'}</b> — 靠${li.label}進帳 <b>${fmt(li.inc)}</b></div>`
+      :`<div class="incbanner neg">📉 <b>${li.situ||'景氣低迷'}</b> — 本業虧損 <b>${fmt(-li.inc)}</b></div>`;
+  }
+  if(S.lastStock){const g=S.lastStock.gain,pct=Math.round(S.lastStock.ret*100);
+    h+= S.lastStock.crash
+      ?`<div class="incbanner neg">💥 <b>股災來襲!</b>持股重挫 <b>${fmt(-g)}</b>(${pct}%)</div>`
+      :(g>=0
+        ?`<div class="incbanner stk">📊 持股複利,這一年滾出 <b>+${fmt(g)}</b>(+${pct}%)</div>`
+        :`<div class="incbanner neg">📉 持股回檔,這一年縮水 <b>${fmt(-g)}</b>(${pct}%)</div>`);
+  }
+  return h;
+}
+/* 每一年的收入都不一樣:景氣有好有壞;上班族隨年資慢慢加薪;老闆本業獲利大起大落、壞年頭可能虧損 */
+function yearlyIncome(){
+  const base=CUR.income||0;
+  if(!base)return {inc:0,label:CUR.incomeLabel||'工作收入',situ:'這一年沒有固定收入'};
+  const yearsIn=Math.max(0,S.age-((CUR.start&&CUR.start.age)||S.age));
+  const r=RNG();const id=CURID;let mult,situ;
+  if(id==='founder'){
+    if(r<0.15){mult=-0.4;situ='訂單銳減,本業小虧';}
+    else if(r<0.35){mult=0.5;situ='景氣偏冷,獲利縮水';}
+    else if(r<0.65){mult=1.0;situ='營運平穩,獲利照舊';}
+    else if(r<0.88){mult=1.8;situ='接單暢旺,獲利豐收';}
+    else{mult=2.8;situ='接到大單,營收翻倍';}
+  }else if(id==='richkid'){
+    if(r<0.2){mult=0.6;situ='家裡今年手頭緊,生活費縮水';}
+    else if(r<0.75){mult=1.0;situ='爸爸照常給生活費';}
+    else{mult=1.6;situ='家裡投資有賺,多塞你一筆';}
+  }else{
+    const senior=1+0.05*yearsIn;let econ;
+    if(r<0.15){econ=0.85;situ='景氣寒冬,薪水凍漲';}
+    else if(r<0.4){econ=0.95;situ='景氣普通,小幅調薪';}
+    else if(r<0.72){econ=1.1;situ='年資加薪,穩穩入袋';}
+    else if(r<0.92){econ=1.35;situ='產業景氣好,年終加碼';}
+    else{econ=1.7;situ='升遷加薪,收入大跳';}
+    mult=senior*econ;
+  }
+  return {inc:Math.round(base*mult),label:CUR.incomeLabel||'工作收入',situ};
+}
+/* ===== 逐年推進引擎:一次只過一年、每年都有內容;里程碑每局順序不同,跑完後無限延伸 ===== */
+function scAge(id){return (S.ages&&S.ages[id]!==undefined)?S.ages[id]:undefined;}
+/* 決定下一步要往哪:主線里程碑→跳到本局播放清單的下一個;支線場景→照走;其餘→無限模式 */
+function advanceCourse(go){
+  if(go&&S.mainSet&&S.mainSet.has(go)){S.mileIdx++;const nxt=S.mile[S.mileIdx];S.resume=(nxt&&CUR.scenes[nxt])?nxt:null;return;}
+  if(go&&CUR.scenes[go]&&go!=='fork'&&go!=='final'){S.resume=go;return;}
+  S.resume=null;
+}
+function continueTo(go){advanceCourse(go);step();window.scrollTo({top:0,behavior:'smooth'});}
+function stepKeep(){step();window.scrollTo({top:0,behavior:'smooth'});}   // 生活事件:不改變前進的目標
+/* 前進一個「片刻」:支線立即銜接;同一年還有日常就演日常(不加歲);否則跨到新的一年 */
+function step(){
+  const r=S.resume;
+  if(r&&CUR.scenes[r]&&scAge(r)===undefined){arriveScripted(r);return;}         // 支線:同年立即銜接
+  if((S.dayIdx||0)<(S.daysThisYear||0)){S.dayIdx++;S.lastIncome=null;S.lastStock=null;renderGenLife(pickDaily());return;} // 年中的日常(同一歲,好幾件)
+  openNewYear();
+}
+function gate(){
+  const nn=net(S),thr=RETIRE_AT[CURID]||Infinity;
+  if(nn>=thr){
+    if(!S.retireLatch){renderRetire();return true;}     // 到門檻→問要不要退休
+    if(RNG()<0.30){renderMisfortune();return true;}     // 續玩→有機率遇到意外
+  }
+  return false;
+}
+/* 跨到新的一年:年齡剛好 +1、結算收入,然後決定這一年的「大事」;沒有大事就是平凡的一年(幾件日常) */
+function openNewYear(){
+  S.age++;S.year++;
+  if(CUR.income){const yi=yearlyIncome();S.cash+=yi.inc;if(S.cash<0){S.debt=(S.debt||0)-S.cash;S.cash=0;}
+    S.lastIncome={inc:yi.inc,label:yi.label,situ:yi.situ,hadLoss:yi.inc<0};
+    S.log.push({yr:S.year,txt: yi.inc>=0?`${S.age} 歲・${yi.situ},進帳 ${fmt(yi.inc)}`:`${S.age} 歲・${yi.situ},虧損 ${fmt(-yi.inc)}`});
+  }else S.lastIncome=null;
+  /* 持股複利:抱著的股票每年會隨市場滾動(多數年份成長,偶爾回檔)——這就是複利的力量 */
+  if(S.stock>0){
+    const rr=RNG();let ret;   // 每年市場報酬:平均約 +4%,多數溫和;但偶爾(約4%機率)會遇到股災重挫
+    if(rr<0.04)ret=-0.28-RNG()*0.17;   // 股災:−28%~−45%,難得但很痛
+    else if(rr<0.16)ret=-0.08;else if(rr<0.38)ret=0.03;else if(rr<0.70)ret=0.07;else if(rr<0.90)ret=0.11;else ret=0.16;
+    const crash=ret<=-0.22;
+    const gain=Math.round(S.stock*ret);S.stock=Math.max(0,S.stock+gain);
+    S.lastStock={gain,ret,crash};
+    S.log.push({yr:S.year,txt: crash?`💥 股災!持股重挫 ${fmt(-gain)}`:(gain>=0?`持股複利滾出 ${fmt(gain)}`:`持股回檔 ${fmt(-gain)}`)});
+  }else S.lastStock=null;
+  renderHUD();
+  const hA=document.getElementById('hAge');if(hA){hA.style.color='var(--sk-red)';setTimeout(()=>{hA.style.color='';},260);}
+  S.dayIdx=0;
+  if(gate()){S.daysThisYear=(RNG()<0.5?1:0);return;}                                                     // 意外年
+  const r=S.resume;
+  if(r&&CUR.scenes[r]&&scAge(r)!==undefined&&scAge(r)<=S.age){S.daysThisYear=(RNG()<0.5?1:0);arriveScripted(r);return;} // 里程碑年
+  if(S.age-(S.lastBetAge||S.age)>=3){S.daysThisYear=(RNG()<0.5?1:0);S._genbet=makeGenBet();renderTrainStep('__genbet__');return;}  // 投資年
+  S.daysThisYear=1+(RNG()<0.6?1:0)+(RNG()<0.3?1:0);S.dayIdx=1;renderGenLife(pickDaily());               // 平凡的一年:1~3 件日常
+}
+function arriveScripted(id){
+  const sc=CUR.scenes[id];
+  if(!sc){renderGenLife(pickDaily());return;}
+  if(sc.kind==='bet'){renderTrainStep(id);return;}   // 投資篇章→進場前先給修煉
+  S.scene=id;renderScene();
+}
+/* 挑一個「最近沒出現過」的日常事件,避免短時間內重複同一件事 */
+function pickDaily(){
+  if(!S.recentDaily)S.recentDaily=[];
+  const U=CUR.income||100000;
+  /* 只挑「符合條件」的事件(例如沒生小孩就不會出現育兒事件) */
+  const elig=[];for(let i=0;i<GEN_LIFE.length;i++){const ev=GEN_LIFE[i](U);if(!ev.req||ev.req(S))elig.push(i);}
+  const avoid=new Set(S.recentDaily);
+  let pool=elig.filter(i=>!avoid.has(i));
+  if(!pool.length)pool=elig.length?elig.slice():GEN_LIFE.map((_,i)=>i);
+  const idx=pool[Math.floor(RNG()*pool.length)];
+  S.recentDaily.push(idx);
+  const keep=Math.min(9,GEN_LIFE.length-1);   // 記住最近 9 件,這段時間內不重覆
+  while(S.recentDaily.length>keep)S.recentDaily.shift();
+  return GEN_LIFE[idx](U);
+}
+function makeGenBet(){
+  if(!S.recentBet)S.recentBet=[];
+  const avoid=new Set(S.recentBet);
+  let pool=[];for(let i=0;i<GEN_BET_TITLES.length;i++)if(!avoid.has(i))pool.push(i);
+  if(!pool.length){for(let i=0;i<GEN_BET_TITLES.length;i++)pool.push(i);}
+  const idx=pool[Math.floor(RNG()*pool.length)];
+  S.recentBet.push(idx);while(S.recentBet.length>Math.min(3,GEN_BET_TITLES.length-1))S.recentBet.shift();
+  const p=GEN_BET_TITLES[idx];
+  const base=Math.max(CUR.betBase||100000,Math.round(net(S)*0.05));
+  return {kind:'bet',gen:true,chap:'投資時刻',t:p.t,x:p.x,base};
+}
+function retireLinkHTML(){return (S.age>=60)?`<button class="quitlife" id="quitLife">🏁 我想收手,結束這一生(退休結算)</button>`:'';}
+function wireRetireLink(){const b=document.getElementById('quitLife');if(b)b.onclick=()=>{S.retired=true;S.log.push({yr:S.year,txt:'決定收手,退休結算'});resolveEnding();};}
+/* 選項只顯示「做什麼」,不劇透會加減什麼(保留驚喜);像「得:/失:」這種提示一律不顯示 */
+function choiceHint(h){return (h&&!/[得失][:：]/.test(h))?`<div class="ch">${h}</div>`:'';}
+function renderGenLife(ev){
+  AWAIT=false;S._keepCourse=true;S._spWarned=false;
+  const story=(typeof ev.x==='function')?ev.x(S):ev.x;
+  let html=`<div class="beat-head"><span class="chap">${S.year} 年 · ${S.age}歲</span><span class="yr">人生片刻</span><span class="tt">${ev.ic||''} ${ev.t}</span></div>
+    ${incomeBanner()}<div class="story">${story}</div><div class="choices">`;
+  ev.c.forEach((ch,i)=>{if(ch.if&&!ch.if(S))return;html+=`<button class="choice" data-i="${i}"><div class="cl">${ch.l}</div>${choiceHint(ch.h)}<span class="arrow">→</span></button>`;});
+  html+=`</div>`+retireLinkHTML();
+  const stage=document.getElementById('stage');stage.innerHTML=html;
+  stage.querySelectorAll('.choice').forEach(b=>{b.onclick=()=>chooseOption(ev.c[+b.dataset.i]);});
+  wireRetireLink();
+  stage.style.animation='none';void stage.offsetWidth;stage.style.animation='fade .35s';
+  renderLog();
+}
+/* 投資前的修煉:免費,每 3 年一次。這幾年的成長化成一次骰,骰運由心態/關係/名聲決定 */
+function renderTrainStep(target){
+  AWAIT=false;S.pendingScene=target;S.lastBetAge=S.age;S._rolledThisTrain=false;   // 這次投資後 3 年內不再自動出現
+  const q=Math.round(stateQuality()*100);
+  const stage=document.getElementById('stage');
+  stage.innerHTML=`<div class="beat-head"><span class="chap">修煉時間 · 這幾年的累積</span><span class="yr">${S.year} 年 · ${S.age}歲</span><span class="tt">🎲 修煉一下</span></div>
+    ${incomeBanner()}<div class="story">這幾年的歷練化成一次<b>修煉</b>。你的<b>心態・關係・名聲</b>越好,越容易骰出高點、收穫越大(目前狀態 <b style="color:var(--gold)">${q}%</b>);狀態低迷則會拖累手氣。所以你怎麼過日子、怎麼選,都會回到你的成長上。</div>
+    <div class="spwarn" id="spWarn" style="display:none"></div>
+    <div class="trainbox" id="trainBox">
+      <div class="dicerow" id="diceRow"></div><div class="res" id="diceRes"></div>
+      <button class="rollbtn" id="rollBtn">🎲 修煉一下(骰技能)</button>
+      <div class="spline" style="margin-top:15px">🌟 可用技能點:<b id="skSP">0</b>(每按一次投入 1 點,集滿就升級)</div>
+      <div class="skills" id="skillList"></div>
+    </div>
+    <button class="nextbtn" id="trainNext">▶ 進入投資 →</button>`;
+  document.getElementById('diceRow').innerHTML=Array(TRAIN_DICE).fill('<div class="dice sm num">?</div>').join('');
+  document.getElementById('diceRes').textContent='';
+  renderSkillList();
+  document.getElementById('rollBtn').onclick=rollForSP;
+  document.getElementById('trainNext').onclick=()=>{
+    if(!trainReady())return;   // 一定要先骰、且把技能點點完才能繼續
+    const t=S.pendingScene;
+    if(t==='__genbet__')renderBet(S._genbet);else{S.scene=t;renderScene();}
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  updateTrainGate();
+  stage.style.animation='none';void stage.offsetWidth;stage.style.animation='fade .35s';
+  renderLog();
+}
+/* 是否可以離開修煉:必須已骰過,且技能點已用完(或技能已全滿無處可點) */
+function trainReady(){
+  const rolled=!!S._rolledThisTrain;
+  const canSpend=(S.sp||0)>0 && SKILLS.some(s=>lvl(s.id)<s.max);
+  return rolled && !canSpend;
+}
+function updateTrainGate(){
+  const btn=document.getElementById('trainNext');if(!btn)return;
+  const rolled=!!S._rolledThisTrain;
+  const canSpend=(S.sp||0)>0 && SKILLS.some(s=>lvl(s.id)<s.max);
+  const ready=rolled && !canSpend;
+  btn.disabled=!ready;
+  btn.textContent = !rolled ? '🎲 先骰一次技能' : (canSpend ? '👆 把技能點點完' : '▶ 進入投資 →');
+}
+function renderRetire(){
+  AWAIT=false;const nn=net(S);const stage=document.getElementById('stage');
+  const again=S.retireOffered;
+  stage.innerHTML=`<div class="beat-head"><span class="chap">人生抉擇</span><span class="yr">${S.year} 年 · ${S.age}歲</span><span class="tt">要不要就此退休?</span></div>
+    <div class="story">你的資本額已經來到 <span class="hl">${fmt(nn)}</span>,${again?'依然穩坐在財富自由的門檻之上':'跨過了財富自由的門檻'}。你可以就此<b>急流勇退</b>,帶著這份成就享受人生;也可以繼續留在股海拚更大的傳奇——但續玩就有風險,<b style="color:var(--sk-red)">意外、重病、職業傷害</b>隨時可能找上門,把你的身家咬掉一塊。</div>
+    <div class="choices">
+      <button class="choice" id="retireYes"><div class="cl">🏖️ 功成身退,見好就收</div><div class="ch">立刻以贏家姿態結束這一生</div><span class="arrow">→</span></button>
+      <button class="choice" id="retireNo"><div class="cl">🔥 繼續征戰,冒險拚更大的</div><div class="ch">可能遇到意外,但也可能更上一層</div><span class="arrow">→</span></button>
+    </div>`;
+  stage.style.animation='none';void stage.offsetWidth;stage.style.animation='fade .35s';
+  document.getElementById('retireYes').onclick=()=>{S.retired=true;S.log.push({yr:S.year,txt:'功成身退,選擇退休'});resolveEnding();};
+  document.getElementById('retireNo').onclick=()=>{S.retireOffered=true;S.retireLatch=true;step();window.scrollTo({top:0,behavior:'smooth'});};
+}
+function renderMisfortune(){
+  AWAIT=false;
+  const mf=MISFORTUNES[Math.floor(RNG()*MISFORTUNES.length)];
+  const before=net(S);
+  let dmg=Math.round(mf.pct*(Math.max(0,S.cash)+Math.max(0,S.stock)));
+  let rem=dmg;const fc=Math.min(Math.max(0,S.cash),rem);S.cash-=fc;rem-=fc;if(rem>0){const fs=Math.min(Math.max(0,S.stock),rem);S.stock-=fs;rem-=fs;}if(rem>0)S.debt=(S.debt||0)+rem;
+  if(mf.mind)S.mind=clamp(S.mind+mf.mind);if(mf.rel)S.rel=clamp(S.rel+mf.rel);if(mf.fame)S.fame=clamp(S.fame+mf.fame);
+  S.log.push({yr:S.year,txt:`意外:${mf.t},損失 ${fmt(dmg)}`});
+  if(S.cash<=0&&S.stock<=0)S.bankrupt=true;
+  S.retireLatch=false; // 出事後,下一步會再問一次要不要退休
+  renderHUD();
+  const stage=document.getElementById('stage');
+  stage.innerHTML=`<div class="beat-head"><span class="chap">天有不測風雲</span><span class="yr">${S.year} 年 · ${S.age}歲</span><span class="tt">${mf.ic} ${mf.t}</span></div>
+    <div class="story">${mf.x}</div>
+    <div class="result bad" style="margin-top:16px">這場意外讓你損失了 <b>${fmt(dmg)}</b>${mf.mind?`,心態受創`:''}。你開始重新掂量:繼續留在市場裡,到底值不值得?</div>`;
+  stage.style.animation='none';void stage.offsetWidth;stage.style.animation='fade .35s';
+  const nb=document.createElement('button');nb.className='nextbtn';
+  if(S.bankrupt){nb.textContent='💀 破產結算 →';nb.onclick=()=>resolveEnding();}
+  else{nb.textContent='繼續 →';nb.onclick=()=>{step();window.scrollTo({top:0,behavior:'smooth'});};}
+  stage.appendChild(nb);
+}
+function renderScene(){
+  AWAIT=false;S._keepCourse=false;S._spWarned=false;
+  const sc=CUR.scenes[S.scene];
+  if(!sc){resolveEnding();return;}
+  renderHUD();
+  if(sc.kind==='bet'){renderBet(sc);return;}
+  const isFirst=(S.scene===CUR.first&&S.openingLine);
+  const story=(typeof sc.x==='function')?sc.x(S):sc.x;
+  let html=`<div class="beat-head">${sc.chap?`<span class="chap">${sc.chap}</span>`:''}<span class="yr">${S.year} 年 · ${S.age}歲</span><span class="tt">${sc.t}</span></div>
+    ${isFirst?`<div class="incbanner">🎬 <b>開局</b> — ${S.openingLine}</div>`:incomeBanner()}<div class="story">${story}</div><div class="choices">`;
+  sc.c.forEach((ch,i)=>{if(ch.if&&!ch.if(S))return;html+=`<button class="choice" data-i="${i}"><div class="cl">${ch.l}</div>${choiceHint(ch.h)}<span class="arrow">→</span></button>`;});
+  html+=`</div>`+retireLinkHTML();
+  const stage=document.getElementById('stage');stage.innerHTML=html;
+  stage.querySelectorAll('.choice').forEach(b=>{b.onclick=()=>chooseOption(sc.c[+b.dataset.i]);});
+  wireRetireLink();
+  stage.style.animation='none';void stage.offsetWidth;stage.style.animation='fade .35s';
+  renderLog();
+}
+function chooseOption(ch){
+  if(AWAIT)return;
+  AWAIT=true;
+  let out={log:ch.log,d:ch.d,set:ch.set,go:ch.go,mood:ch.mood};
+  if(ch.roll){const o=pickWeighted(ch.roll);out={log:o.log,d:o.d,set:o.set,go:(o.go!==undefined?o.go:ch.go),mood:o.mood};if(ch.d)applyDelta(ch.d);}
+  applyDelta(out.d);applySet(ch.set);applySet(out.set);
+  (ch.f||[]).forEach(f=>S.flags[f]=true);
+  S.log.push({yr:S.year,txt:ch.l});
+  if(S.cash<=0&&S.stock<=0)S.bankrupt=true;
+  renderHUD();
+  const stage=document.getElementById('stage');stage.querySelector('.choices').style.display='none';
+  if(out.log){const div=document.createElement('div');div.className='result '+(out.mood||'');const dtxt=out.d?deltaText({...(ch.roll?ch.d:{}),...out.d}):'';div.innerHTML=`${out.log}${dtxt?`<div class="deltas">${dtxt}</div>`:''}`;stage.appendChild(div);}
+  const nb=document.createElement('button');nb.className='nextbtn';
+  const nextId=(out.go!==undefined?out.go:ch.go);
+  const keep=S._keepCourse;   // 生活事件不改變前進目標;劇本選項才推進里程碑
+  nb.textContent='繼續 →';
+  nb.onclick=()=>{if(keep)stepKeep();else continueTo(nextId);};
+  stage.appendChild(nb);
+}
+function renderLog(){if(!S.log.length)return;document.getElementById('logBox').style.display='block';document.getElementById('logList').innerHTML=S.log.slice(-6).map(e=>`<div class="li"><span class="yr mono">${e.yr}</span>${e.txt}</div>`).join('');}
+
+/* ---------- 倍數下注事件 ---------- */
+function betRisk(sc,t){const base=sc.base||CUR.betBase||100000;const avail=Math.max(0,S.cash)+Math.max(0,S.stock);return Math.max(0,Math.min(base*t.mult,Math.floor(avail)));}
+function renderBet(sc){
+  AWAIT=false;
+  const story=(typeof sc.x==='function')?sc.x(S):sc.x;
+  let html=sceneHead(sc)+incomeBanner()+`<div class="story">${story}</div>
+    <div class="betwrap"><div class="bl">📊 選一個投入倍數 · 成功率越高越安全,倍數越大賺賠越多(升「眼光」技能可提高成功率)</div><div class="bets">`;
+  BET_TIERS.forEach((t,i)=>{
+    const risk=betRisk(sc,t);
+    const winP=Math.round(betWinP(t)*100);
+    const winAmt=Math.round(risk*t.winMult*(1+0.15*lvl('finiq')));
+    html+=`<button class="betopt ${t.cls}" data-i="${i}">
+      <div class="mx">×${t.mult}</div>
+      <div class="bi"><div class="bt">${t.label}</div><div class="bs">${t.sub}　投入約 ${fmt(risk)}</div></div>
+      <div class="odds">成功率<br><b style="font-size:17px">${winP}%</b><br><span style="color:var(--up)">賺 ${fmt(winAmt)}</span></div></button>`;
+  });
+  html+=`</div></div>`;
+  const stage=document.getElementById('stage');stage.innerHTML=html;
+  stage.querySelectorAll('.betopt').forEach(b=>{b.onclick=()=>resolveBet(sc,+b.dataset.i);});
+  stage.style.animation='none';void stage.offsetWidth;stage.style.animation='fade .35s';
+  renderLog();
+}
+function resolveBet(sc,i){
+  if(AWAIT)return;
+  AWAIT=true;
+  const t=BET_TIERS[i],stake=betRisk(sc,t),winP=betWinP(t);
+  const win=RNG()<winP;
+  let profit=0,loss=0;
+  if(win){profit=Math.round(stake*t.winMult*(1+0.15*lvl('finiq')));S.cash+=profit;S.mind=clamp(S.mind+t.mgood);if(t.mult>=3)S.fame=clamp(S.fame+3);}
+  else{loss=Math.round(stake*t.lossMult*Math.max(0.1,1-0.12*lvl('disc')));let rem=loss;const fc=Math.min(Math.max(0,S.cash),rem);S.cash-=fc;rem-=fc;if(rem>0){const fs=Math.min(Math.max(0,S.stock),rem);S.stock-=fs;rem-=fs;}if(rem>0)S.debt=(S.debt||0)+rem;S.mind=clamp(S.mind-t.mbad*Math.max(0.1,1-0.15*lvl('mindful')));}
+  if(t.mult>=5)S.flags.aggressive=true;
+  S.log.push({yr:S.year,txt:`投資 ×${t.mult}(成功率${Math.round(winP*100)}%)${win?' 獲利':' 虧損'}`});
+  if(S.cash<=0&&S.stock<=0)S.bankrupt=true;
+  renderHUD();
+  const stage=document.getElementById('stage');stage.querySelector('.betwrap').style.display='none';
+  const div=document.createElement('div');div.className='result '+(win?'good':'bad');
+  div.innerHTML=`<div style="text-align:center;font-size:30px;margin-bottom:4px">${win?'📈':'📉'}</div>
+    ${win?`<b>${t.label}(×${t.mult})</b>,成功率 ${Math.round(winP*100)}% —— <b style="color:var(--up)">投資成功!</b>獲利 <b>+${fmt(profit)}</b>。`:`<b>${t.label}(×${t.mult})</b>,成功率 ${Math.round(winP*100)}% —— <b style="color:var(--down)">這次沒看準</b>,虧損 <b>−${fmt(loss)}</b>。`}`;
+  stage.appendChild(div);
+  const nb=document.createElement('button');nb.className='nextbtn';
+  if(S.bankrupt){nb.textContent='💀 破產結算 →';nb.onclick=()=>resolveEnding();}
+  else{nb.textContent='繼續 →';nb.onclick=()=>{if(sc.gen)stepKeep();else continueTo(sc.go);};}
+  stage.appendChild(nb);
+}
+
+/* ---------- 修煉骰技能點(免費,每 3 年一次;骰運由心態/關係/名聲決定) ---------- */
+function openSheet(id){document.getElementById('sheetBg').classList.add('show');document.getElementById(id).classList.add('show');}
+function closeSheets(){document.getElementById('sheetBg').classList.remove('show');document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));}
+const TRAIN_DICE=3; /* 修煉一次骰 3 顆 */
+/* 狀態品質 0(差)~1(好):心態、關係、名聲的平均。越高→越容易骰到高點 */
+function stateQuality(){return clamp(((S.mind||0)+(S.rel||0)+(S.fame||0))/3,0,100)/100;}
+function rollDie(){
+  const q=stateQuality();const w=[];let tot=0;
+  for(let v=1;v<=6;v++){let x=1+(q-0.5)*(v-3.5)*0.9;if(x<0.05)x=0.05;w.push(x);tot+=x;}   // q 高→高點權重大
+  let r=RNG()*tot,acc=0;for(let v=1;v<=6;v++){acc+=w[v-1];if(r<acc)return v;}return 6;
+}
+function rollForSP(){
+  if(S._rolledThisTrain)return;S._rolledThisTrain=true;S.diceRolls=(S.diceRolls||0)+1;
+  const vals=[];for(let k=0;k<TRAIN_DICE;k++)vals.push(rollDie());
+  const sum=vals.reduce((a,b)=>a+b,0);const gain=sum;S.sp+=gain;
+  const q=stateQuality();const qtxt=q>=0.62?'狀態極佳,手氣加持':(q>=0.45?'狀態平穩':'狀態低迷,拖累了手氣');
+  document.getElementById('diceRow').innerHTML=vals.map(v=>`<div class="dice sm num roll ${v>=5?'g':(v<=2?'b':'')}">${v}</div>`).join('');
+  document.getElementById('diceRes').innerHTML=`骰出 <b>${vals.join(' + ')}</b> = <b>${sum}</b> 點(${qtxt})→ 獲得 <b style="color:var(--gold)">${gain}</b> 技能點!`;
+  const rb=document.getElementById('rollBtn');if(rb){rb.disabled=true;rb.textContent='✓ 這次修煉已完成';}
+  renderHUD();renderSkillList();
+}
+/* ---------- 技能樹 ---------- */
+function renderSkillList(){
+  document.getElementById('skSP').textContent=S.sp||0;
+  const box=document.getElementById('skillList');box.innerHTML='';
+  if(!S.skillProg)S.skillProg={};
+  SKILLS.forEach(sk=>{
+    const cur=lvl(sk.id),cost=cur+1,maxed=cur>=sk.max;
+    const prog=S.skillProg[sk.id]||0;
+    const pips=Array.from({length:sk.max},(_,i)=>`<i class="${i<cur?'on':''}"></i>`).join('');
+    const note=maxed?'<span style="color:var(--up);font-weight:700">已點滿 MAX</span>':`下一級 <b>${prog}/${cost}</b> 點${prog>=cost?'':`(再投 ${cost-prog} 點升級)`}`;
+    const el=document.createElement('div');el.className='skl';
+    el.innerHTML=`<div class="ic">${sk.ic}</div><div class="info"><div class="n">${sk.n} <span style="color:var(--ink3);font-size:11px">Lv.${cur}/${sk.max}</span></div><div class="d">${sk.d}</div><div class="lv">${pips}</div><div class="prog">${note}</div></div>`;
+    const up=document.createElement('button');up.className='up'+(maxed?' max':'');
+    if(maxed){up.textContent='MAX';up.disabled=true;}
+    else{up.innerHTML='＋1';up.disabled=(S.sp<1);up.title='投入 1 技能點';
+      up.onclick=()=>{if(S.sp<1)return;S.sp-=1;let p=(S.skillProg[sk.id]||0)+1;if(p>=cost){S.skills[sk.id]=cur+1;S.skillProg[sk.id]=0;}else{S.skillProg[sk.id]=p;}renderSkillList();renderHUD();};}
+    el.appendChild(up);box.appendChild(el);
+  });
+  updateTrainGate();   // 骰完/點完技能後,更新「進入投資」是否可按
+}
+
+/* ============================================================
+   組合式結局:資本額階級 × 婚姻 × 房產 × 心境 × 名聲
+   ============================================================ */
+const TIERS=[
+ {min:200000000,key:'頂級富豪',emoji:'👑',w:'你的資本額突破兩億,躋身頂級富豪的行列,財富多到幾輩子都花不完。'},
+ {min:50000000,key:'富豪',emoji:'💎',w:'你坐擁數千萬身家,是旁人眼中不折不扣的有錢人。'},
+ {min:10000000,key:'富裕',emoji:'🥂',w:'你的資本額跨過千萬門檻,財務自由的大門已向你敞開。'},
+ {min:1000000,key:'小康',emoji:'🏦',w:'你攢下了數百萬的資本,日子過得寬裕而踏實。'},
+ {min:0,key:'平凡',emoji:'🪙',w:'你的資本額不高不低,和大多數人一樣,靠著本業穩穩過活。'},
+ {min:-1000000,key:'虧損',emoji:'📉',w:'幾番折騰,你的帳戶由盈轉虧,還揹上了一筆不算小的債。'},
+ {min:-1e12,key:'破產',emoji:'💸',w:'你把資本賠得精光、負債累累,財務上幾乎一敗塗地。'}
+];
+function tierOf(nn){return TIERS.find(t=>nn>=t.min)||TIERS[TIERS.length-1];}
+function famStatus(s){
+  const f=s.flags;
+  if(f.divorced)return{k:'離異',t:'一段婚姻以離婚收場,你獨自舔著傷口,也更看清了自己。'};
+  if(f.married&&s.rel>=58)return{k:'家庭美滿',t:'你有一個相愛的另一半'+(f.kids?'、還有可愛的孩子':'')+',家是你最溫暖的避風港。'};
+  if(f.married)return{k:'貌合神離',t:'婚還在,但你和另一半之間,只剩下客氣與長長的沉默。'};
+  if(s.rel>=62)return{k:'單身自在',t:'你依然單身,身邊卻圍繞著真心的家人與老友。'};
+  return{k:'孤身一人',t:'忙著追逐財富的你,回過神來,身邊已沒剩幾個親近的人。'};
+}
+function houseStatus(s){const h=s.flags.houses||0;if(h>=2)return'你名下有好幾間房產,光收租金就夠生活;';if(h===1)return'你買下了一間屬於自己的房子,再也不必看房東臉色;';return'你始終沒能擁有自己的房,租來的屋簷下總少了點踏實;';}
+function spiritStatus(s){if(s.flags.gambler&&s.mind<48)return'賭博的癮與市場的起伏,把你的心境磨得千瘡百孔。';if(s.mind>=66)return'難得的是,你始終守住了平和的心境,睡得安穩、笑得自在。';if(s.mind>=42)return'一路上的焦慮與患得患失,在你心裡留下了淡淡的疲憊。';return'長期的壓力壓得你身心俱疲,午夜夢迴時常喘不過氣。';}
+function fameStatus(s){if(s.fame>=62)return'在投資圈裡,你已小有名氣,不少人把你當成榜樣。';if(s.fame>=34)return'在朋友之間,你漸漸成了那個「懂投資」的人。';return'';}
+function traitOf(s){const f=s.flags;if(f.gambler)return'賭徒';if(f.philanthropist)return'慷慨的人';if(f.landlord||(f.houses||0)>=2)return'包租公';if(s.rel<=34)return'孤獨的人';if(s.mind>=66&&s.rel>=60)return'顧家的人';if(s.fame>=62)return'風雲人物';if(f.entrepreneur)return'生意人';return'投資人';}
+function moralOf(s,tier){
+  const f=s.flags;
+  if(f.gambler&&net(S)<0)return'一場又一場的賭局,終究沒能等到翻身的那一把——你把人生押上了牌桌,牌桌沒有還你。';
+  if(tier.key==='頂級富豪'||tier.key==='富豪')return f.married&&s.rel>=58?'如今你考慮的不再是賺錢,而是如何把這份財富與人生的意義,好好傳下去。':'你贏得了金錢,卻在某個深夜發現,能一起分享的人並不多。財富與幸福,你只抓住了一半。';
+  if(tier.min>=1000000)return'回頭看,你沒有走捷徑,而是靠一個個踏實的決定,把日子過成了自己想要的樣子。';
+  if(tier.key==='平凡')return'沒有暴富,也沒有慘賠。平凡,或許正是股海裡最難、也最被低估的一種勝利。';
+  return'這一生的起落,成了你最昂貴、也最深刻的一堂課。市場從不同情誰,但它教會的東西,無比真實。';
+}
+function composeEnding(s){
+  const nn=net(s),tier=tierOf(nn),fam=famStatus(s);
+  const para=[tier.w,houseStatus(s)+fam.t,[spiritStatus(s),fameStatus(s)].filter(Boolean).join(''),moralOf(s,tier)].filter(Boolean).join('\n');
+  const title=tier.key+'的'+traitOf(s);
+  return{emoji:(CUR.endEmoji&&CUR.endEmoji[tier.key])||tier.emoji,title,tier,fam,para};
+}
+function rankOf(nn,s){
+  const wb=(s.mind+s.rel)/2;
+  if(nn>=200000000)return '★★★★★  頂級富豪';
+  if(nn>=50000000&&wb>=55)return '★★★★★  人生勝利組';
+  if(nn>=50000000)return '★★★★☆  富有但空洞';
+  if(nn>=10000000&&wb>=55)return '★★★★☆  安穩上岸';
+  if(nn>=10000000)return '★★★★☆  有錢沒閒';
+  if(nn>=1000000&&wb>=58)return '★★★☆☆  小康幸福';
+  if(nn>=1000000)return '★★★☆☆  略有積蓄';
+  if(nn>=0&&wb>=60)return '★★★☆☆  平凡是福';
+  if(wb>=72)return '★★★☆☆  家和萬事興';
+  if(nn>=0)return '★★☆☆☆  勉強打平';
+  if(nn>-3000000)return '★☆☆☆☆  傷筋動骨';
+  if(wb>=60)return '★★☆☆☆  清貧但知足';
+  return '☆☆☆☆☆  一敗塗地';
+}
+
+const LOGO_SVG=`<div style="font-size:21px;font-weight:800;letter-spacing:5px;color:#fff">股海人生</div>`;
+
+function resolveEnding(){
+  const nn=net(S),E=composeEnding(S),rankTxt=rankOf(nn,S);
+  let statusLine='你走出了 1,000+ 種可能命運中,獨一無二的這一種';
+  if(S.retired){statusLine='🏖️ 你選擇在人生高點功成身退';E.para='🏖️ 你在資本額最風光的時刻急流勇退,漂亮地為股海生涯畫下句點——真正的贏家,懂得何時離場。\n\n'+E.para;E.emoji='🏖️';E.title='功成身退的'+traitOf(S);}
+  else if(S.bankrupt){statusLine='💀 你賠光了一切,人生被迫在此結束';E.para='💀 你把手上的現金與持股全數賠光,遊戲被迫在此結束——但別灰心,人生永遠可以重來。\n\n'+E.para;E.emoji='💸';}
+  document.getElementById('logBox').style.display='none';
+  const stage=document.getElementById('stage');
+  stage.innerHTML=`<div class="ending">
+    <div class="elogo">${LOGO_SVG}</div>
+    <div class="em">${E.emoji}</div>
+    <div class="ti">${E.title}</div>
+    <div class="rank">${rankTxt}</div>
+    <div class="combo2">${statusLine}</div>
+    <div class="tx">${E.para}</div>
+    <div class="final">
+      <div class="fc big"><div class="k">💰 最終資本額</div><div class="v mono">${fmt(nn)}</div></div>
+      <div class="fc"><div class="k">🧠 心態</div><div class="v mono">${Math.round(S.mind)}</div></div>
+      <div class="fc"><div class="k">❤️ 關係</div><div class="v mono">${Math.round(S.rel)}</div></div>
+      <div class="fc"><div class="k">🏠 人生軌道</div><div class="v" style="font-size:15px">${E.fam.k}</div></div>
+      <div class="fc"><div class="k">🎭 名聲</div><div class="v mono">${Math.round(S.fame)}</div></div>
+    </div>
+    <div class="resultimg"><img id="resultImg" alt="你的結局圖"><div class="rihint">👆 長按圖片即可直接儲存,或按下方按鈕下載／分享</div></div>
+    <div class="endbtns">
+      <button class="eb-share" id="imgBtn">📷 下載結局圖</button>
+      <button class="eb-share" id="shareBtn">🔗 複製分享連結</button>
+    </div>
+    <div class="endbtns" style="margin-top:10px">
+      <button class="eb-main" id="againBtn">🔄 再走一次</button>
+      <button class="eb-alt" id="otherBtn">換一個出身</button>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="foot"><span class="by">${SEED?`命運種子 <span class="mono">${SEED}</span>`:''}</div>
+  </div>`;
+  LAST_END={E,nn,rankTxt,mind:Math.round(S.mind),rel:Math.round(S.rel),fame:Math.round(S.fame),age:S.age,ovr:calcOVR(),skills:SKILLS.map(s=>({n:s.n,lv:lvl(s.id)}))};
+  try{const cv=drawResultImage();const im=document.getElementById('resultImg');if(im)im.src=cv.toDataURL('image/jpeg',0.85);}catch(e){const w=document.querySelector('.resultimg');if(w)w.style.display='none';}
+  document.getElementById('againBtn').onclick=()=>startGame(CUR);
+  document.getElementById('otherBtn').onclick=quitToStart;
+  document.getElementById('imgBtn').onclick=downloadResultImage;
+  document.getElementById('shareBtn').onclick=copyShareLink;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function quitToStart(){document.getElementById('game').style.display='none';document.getElementById('start').style.display='block';buildStart();window.scrollTo(0,0);}
+document.getElementById('quitBtn').onclick=()=>{if(confirm('確定放棄這一生,回去重選出身嗎?'))quitToStart();};
+document.getElementById('introStart').onclick=()=>{closeSheets();if(PENDING)startGame(PENDING);};
+document.getElementById('sheetBg').onclick=closeSheets;
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
+
+/* ---------- 分享 ---------- */
+function toast(m){const t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
+function shareURL(){return location.origin+location.pathname+'?char='+encodeURIComponent(CURID)+'&seed='+encodeURIComponent(SEED)+(PNAME?'&name='+encodeURIComponent(PNAME):'');}
+function copyShareLink(){const u=shareURL();const done=()=>toast('分享連結已複製!貼給朋友走同一條命運');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(done).catch(()=>fb(u,done));else fb(u,done);}
+function fb(t,cb){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb&&cb();}catch(e){toast('複製失敗,請手動複製網址');}document.body.removeChild(ta);}
+
+/* ---------- 結局圖(canvas) ---------- */
+function wrapText(ctx,text,maxW){const lines=[];let line='';for(const ch of text){if(ch==='\n'){lines.push(line);line='';continue;}const t=line+ch;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=ch;}else line=t;}if(line)lines.push(line);return lines;}
+function roundRect(x,rx,ry,w,h,r){x.beginPath();x.moveTo(rx+r,ry);x.arcTo(rx+w,ry,rx+w,ry+h,r);x.arcTo(rx+w,ry+h,rx,ry+h,r);x.arcTo(rx,ry+h,rx,ry,r);x.arcTo(rx,ry,rx+w,ry,r);x.closePath();}
+function drawResultImage(){
+  const W=1080,d=LAST_END,E=d.E,cx=W/2,TC='"Noto Sans TC",sans-serif';
+  /* 先量測敘述換行,好算出整張圖的高度(避免文字擠在一起) */
+  const meas=document.createElement('canvas').getContext('2d');
+  meas.font='400 34px '+TC;
+  const paras=E.para.split('\n').map(s=>s.trim()).filter(Boolean);
+  const nLines=[];paras.forEach((p,i)=>{wrapText(meas,p,W-260).forEach(l=>nLines.push(l));if(i<paras.length-1)nLines.push('');});
+  const skills=d.skills||SKILLS.map(s=>({n:s.n,lv:lvl(s.id)}));
+  const skTxt=skills.map(s=>`${s.n} ${s.lv}`).join('   ');
+  /* ---- 版面座標(由上往下累加,行距放寬好閱讀) ---- */
+  let y=96;
+  const pillY=y; y+=68+70;
+  const emojiY=y+74; y+=96;
+  const nameY=y+6; y+=56;
+  const tagY=y+2; y+=74;
+  const eemojiY=y+96; y+=126;
+  const titleY=y+12; y+=78;
+  const rankY=y+8; y+=66;
+  const paraY=y+6; y+=nLines.length*54+22;
+  const cardY=y; const cardH=336; y+=cardH+52;
+  const footY=y+40; y+=104;
+  const H=Math.round(y);
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+  // 背景
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#6d0710');g.addColorStop(.5,'#43060c');g.addColorStop(1,'#2a0509');x.fillStyle=g;x.fillRect(0,0,W,H);
+  const rg=x.createRadialGradient(W*0.8,90,0,W*0.8,90,760);rg.addColorStop(0,'rgba(255,90,77,.32)');rg.addColorStop(1,'rgba(255,90,77,0)');x.fillStyle=rg;x.fillRect(0,0,W,H);
+  x.fillStyle='rgba(255,255,255,.05)';x.strokeStyle='rgba(255,255,255,.16)';x.lineWidth=2;roundRect(x,44,44,W-88,H-88,34);x.fill();x.stroke();
+  x.textAlign='center';x.textBaseline='alphabetic';
+  // 品牌 logo(白底藥丸,紅字)
+  const pw=252,ph=68;x.fillStyle='#ffffff';roundRect(x,cx-pw/2,pillY,pw,ph,34);x.fill();
+  x.fillStyle='#E30613';x.font='800 36px '+TC;x.save();if('letterSpacing' in x)x.letterSpacing='4px';x.fillText('股海人生',cx,pillY+47);x.restore();
+  // 角色 + 最終年齡
+  x.font='96px "Noto Color Emoji","Apple Color Emoji",sans-serif';x.fillText(CUR.emoji,cx,emojiY);
+  x.fillStyle='#fff5f5';x.font='800 46px '+TC;x.fillText(PNAME||CUR.name,cx,nameY);
+  x.fillStyle='#FF8a80';x.font='600 28px '+TC;x.fillText(`${d.age} 歲 · ${roleOf(CUR)}`,cx,tagY);
+  // 結局
+  x.font='122px "Noto Color Emoji","Apple Color Emoji",sans-serif';x.fillText(E.emoji,cx,eemojiY);
+  x.fillStyle='#fff';x.font='900 66px '+TC;x.fillText(E.title,cx,titleY);
+  x.fillStyle='#F6C453';x.font='700 38px '+TC;x.fillText(d.rankTxt,cx,rankY);
+  // 敘述(行距 54,寬鬆好讀)
+  x.fillStyle='#ffe6e6';x.font='400 34px '+TC;let ty=paraY;nLines.forEach(l=>{if(l)x.fillText(l,cx,ty);ty+=54;});
+  // 成績卡:資本額 + 操盤戰力 + 技能 + 三圍
+  x.fillStyle='rgba(0,0,0,.32)';x.strokeStyle='rgba(255,255,255,.14)';x.lineWidth=1.5;roundRect(x,80,cardY,W-160,cardH,24);x.fill();x.stroke();
+  let cyy=cardY+56;
+  x.fillStyle='#c99a9a';x.font='600 26px '+TC;x.fillText('最終資本額',cx,cyy);cyy+=68;
+  x.fillStyle=d.nn>=0?'#F6C453':'#ff6b7a';x.font='900 72px '+TC;x.fillText(fmt(d.nn),cx,cyy);cyy+=56;
+  x.fillStyle='#ffcf8a';x.font='700 30px '+TC;x.fillText(`⚡ 操盤戰力 ${d.ovr}`,cx,cyy);cyy+=46;
+  x.fillStyle='#e6c7c7';x.font='500 26px '+TC;x.fillText(skTxt,cx,cyy);cyy+=46;
+  x.fillStyle='#f0d3d3';x.font='500 26px '+TC;x.fillText(`🧠 心態 ${d.mind}    ❤️ 關係 ${d.rel}    🎭 名聲 ${d.fame}    🏠 ${E.fam.k}`,cx,cyy);
+  // 頁尾
+  x.fillStyle='#ffd9d0';x.font='800 30px '+TC;x.fillText('股海人生 · 股神養成計畫',cx,footY);
+  x.fillStyle='#e0b8b8';x.font='500 23px '+TC;x.fillText('命運種子 '+SEED,cx,footY+40);
+  return cv;
+}
+function downloadResultImage(){try{const cv=drawResultImage();const pn=PNAME||CUR.name;const name='股海人生_'+pn+'_'+LAST_END.E.title+'.jpg';cv.toBlob(blob=>{if(navigator.canShare){try{const file=new File([blob],name,{type:'image/jpeg'});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:'股海人生',text:pn+'|'+LAST_END.E.title}).catch(()=>saveBlob(blob,name));return;}}catch(e){}}saveBlob(blob,name);},'image/jpeg',0.85);toast('結局圖已產生');}catch(e){toast('產圖失敗:'+e.message);}}
+function saveBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+
+/* ---------- 角色資料 ---------- */
+CHARS=[];
+/* 共用的分支支線:結局前的「人生十字路口」,選不同路 → 不同支線 */
+const SHARED_SCENES={
+ fork:{chap:'終章 · 人生的十字路口',t:'你要走哪一條路?',x:'風浪過後,你站在人生的十字路口。前方分岔成好幾條路,每一條都通往不一樣的下半生。這一次,沒有標準答案——你的心,想往哪裡去?',c:[
+   {l:'🎯 全職投入股市,成為專業投資人',h:'把投資變成職業,孤注一擲',go:'path_pro'},
+   {l:'🌿 收手,把重心還給生活與家人',h:'夠了就好,人生不只有錢',go:'path_life'},
+   {l:'🔥 回到原本的規劃,面對最後的抉擇',h:'還有未竟的野心',go:'final'}
+ ]},
+ path_pro:{chap:'支線 · 職業之路',t:'沒有底薪的戰場',x:'你辭掉了穩定,把交易當成正職。從此沒有薪水的安全網,只有自己的判斷與紀律。這條路,能讓你飛得更高,也可能摔得更重。',c:[
+   {l:'建立自己的交易系統,穩紮穩打',h:'紀律為王',d:{mind:10,fame:12},set:{entrepreneur:true},log:'你把投資做成一門嚴謹的生意,靠系統與紀律活了下來,成了受人請益的專業玩家。',mood:'good'},
+   {l:'追求高報酬,重倉全力衝刺',h:'要做就做大的',d:{},set:{entrepreneur:true},log:'你把職業生涯押上高報酬的賭注。',roll:[
+     {w:5,log:'你的積極換來亮眼績效,一戰打響名號,登上人生高峰。',d:{stock:8000000,fame:18,mind:6},mood:'good'},
+     {w:5,log:'沒有底薪的日子太殘酷,一次判斷失誤讓你元氣大傷,黯然收場。',d:{stock:-5000000,mind:-16,rel:-6},mood:'bad'}]}
+ ]},
+ path_life:{chap:'支線 · 歸於平淡',t:'把日子過好',x:'你把投資調成無腦定投,把省下來的時間與心力,還給了家人、健康與那些一直被你擱著的興趣。錢,夠用就好。',c:[
+   {l:'把時間全給家人,好好經營關係',h:'家和萬事興',d:{rel:18,mind:12},log:'你陪家人旅行、陪孩子長大、陪父母變老。帳戶沒暴增,但心裡前所未有地富足。',mood:'good'},
+   {l:'發展新的興趣與斜槓副業',h:'活出第二人生',d:{mind:12,fame:8,rel:6},log:'你把熱情投入新的領域,活出了投資以外的第二人生,日子充實而自在。',mood:'good'}
+ ]}
+};
+function A(c){c.scenes=Object.assign({},SHARED_SCENES,c.scenes);CHARS.push(c);}
+A({
+ id:'richkid',name:'陳世昀',emoji:'💠',tag:'24歲 · 富二代',
+ desc:'含著金湯匙出生,大學剛畢業,家裡就撥了一筆錢讓你「練習理財」。你不缺第一桶金,缺的是——會不會把它守住,還是揮霍、賭光。',
+ flaw:'揮霍成性、以為錢很好賺,容易被酒肉朋友拉去賭',
+ betBase:2400000,income:600000,incomeLabel:'爸爸給的生活費與家裡資助',mid:['love','house','borrow'],
+ start:{year:2026,age:24,cash:20000000,stock:0,debt:0,mind:60,rel:62,fame:22},
+ first:'start',
+ scenes:{
+  start:{chap:'第一章 · 含金湯匙',age:24,t:'兩千萬的起跑線',x:'畢業典禮隔天,爸爸把一張存摺推到你面前:「兩千萬,當你的學費。賺了是你的,賠了……就當買個教訓。」多數人拚一輩子的數字,是你人生的起點。',c:[
+    {l:'跟著家族理財顧問,穩健配置',h:'守成',d:{stock:13000000,cash:-13000000,mind:6},f:['prudent'],log:'你壓下玩心,把大部分資金做了穩健的股債配置。顧問說你比想像中沉得住氣。',mood:'good',go:'bull'},
+    {l:'名車、名錶、夜店,錢再賺就有',h:'揮霍',d:{cash:-5000000,mind:4,rel:-3,fame:10},set:{playboy:true},log:'你過起紙醉金迷的日子,身邊圍滿了「朋友」。錢像水一樣流出去。',mood:'bad',go:'bull'},
+    {l:'想證明自己眼光,重壓看好的產業',h:'高風險',d:{cash:-14000000},log:'你不信邪,把大半身家壓在一個火熱的產業。',roll:[
+      {w:5,log:'產業起飛,你一戰成名,家裡對你刮目相看。',d:{stock:22000000,mind:8,fame:12},mood:'good'},
+      {w:5,log:'你買在題材最高點,一波修正就蒸發掉一台超跑。',d:{stock:8000000,mind:-14},mood:'bad'}],go:'bull'}]},
+  bull:{kind:'bet',chap:'第二章 · 多頭派對',age:27,t:'人人都是股神',base:4500000,go:'love',x:'市場進入瘋狂多頭,你身邊的紈褲子弟各個號稱翻倍。有人揪你玩融資、玩期貨,說「不開槓桿等於沒賺」。這一把,你想壓多大?'},
+  love:{chap:'第三章 · 感情',age:30,t:'誰是真心的',x:'你身邊從不缺追求者。這一年,你同時遇到兩個人:一個真心待你、不在乎你的家世;一個貌美卻眼裡只有你的錢。你也可以選擇繼續單身享受自由。',c:[
+    {l:'選擇真心的那一個,結婚',d:{rel:18,mind:6,cash:-1500000},set:{married:true},log:'你辦了場低調而溫馨的婚禮。第一次,你覺得有人愛的是你,不是你的錢。',mood:'good',go:'house'},
+    {l:'娶了最美的那一個,砸錢辦世紀婚禮',d:{cash:-6000000,rel:-4,fame:8},set:{married:true},log:'婚禮登上社交版面,風光無限。但你隱約知道,對方要的是什麼。',mood:'bad',go:'house'},
+    {l:'繼續單身,享受花花世界',d:{rel:-6,mind:2,fame:5},set:{playboy:true},log:'你享受著無拘無束,只是夜深人靜時,豪宅顯得格外空曠。',go:'house'}]},
+  house:{chap:'第四章 · 置產',age:33,t:'錢要變成什麼',x:'長輩說「有土斯有財」,勸你把浮動的股票換成看得見的房子。你手上的資金,足以買下不只一間。',c:[
+    {l:'買一間自住豪宅,安定下來',d:{cash:-12000000,rel:8,mind:4},set:{houses:1},log:'你買下一間採光極好的房子,把它布置成真正的家。',mood:'good',go:'borrow'},
+    {l:'買好幾間收租,當包租公',d:{cash:-16000000,debt:4000000},set:{houses:2,landlord:true},log:'你用槓桿一口氣置入多間套房,每月現金流入帳,當起了包租公。',mood:'good',go:'borrow'},
+    {l:'不置產,資金全留在股市滾',d:{mind:2},f:['allin'],log:'你相信股市的複利遠勝磚頭,把資金全留在市場裡。',go:'borrow'}]},
+  borrow:{chap:'第五章 · 人情',age:35,t:'落難的親戚',x:'一位曾經風光的叔叔生意失敗,揹了一身債,登門向你借三百萬周轉。他紅著眼眶,說只有你幫得了他。',c:[
+    {l:'爽快借出,親戚有難就該幫',d:{cash:-3000000,rel:10},set:{lent:true},log:'你二話不說開了支票。叔叔老淚縱橫。這筆錢,你沒指望能全數要回。',mood:'good',go:'gamble'},
+    {l:'借,但立字據談好利息',d:{cash:-3000000,rel:2,mind:3},set:{lent:true},log:'你借了,但也把醜話講在前頭。親情與金錢,你試著各歸各位。',go:'gamble'},
+    {l:'婉拒,救急不救窮',h:'得:守住財務　失:親情名聲',d:{rel:-12,mind:2},log:'你狠下心拒絕、守住了自己的荷包,但叔叔失望地離開,家族裡也起了你「無情」的耳語。',go:'gamble'}]},
+  gamble:{chap:'第六章 · 誘惑',age:37,t:'牌桌上的朋友',x:'幾個從小玩到大的損友,揪你進了一個「高端俱樂部」——名義是聯誼,實際是地下賭場與期貨對賭。「以你的身家,這才叫刺激。」',c:[
+    {l:'看清這是無底洞,轉身離開',d:{mind:8,rel:-2},log:'你藉故離席。回家的路上你想,能全身而退,也是一種本事。',mood:'good',go:'crash'},
+    {l:'小賭怡情,玩一玩就收',d:{cash:-1000000},log:'你陪朋友玩了幾把,輸贏都不大。',roll:[
+      {w:5,log:'你守住了分寸,小輸小贏,拍拍屁股走人。',d:{cash:600000,mind:2},mood:'good',go:'crash'},
+      {w:5,log:'贏錢的快感讓你越坐越久,你開始覺得——這比投資爽多了。',d:{cash:400000,mind:-4},set:{gambler:true},mood:'bad',go:'gamble_deep'}]},
+    {l:'豪賭一場,富二代怕過誰',d:{cash:-4000000},set:{gambler:true},log:'你把賭注越推越高,腎上腺素飆到頂點。',roll:[
+      {w:4,log:'你賭贏了一把大的,眾人簇擁,你飄飄然。',d:{cash:6000000,mind:-6,fame:6},mood:'good',go:'gamble_deep'},
+      {w:6,log:'莊家的水太深,你一夜輸掉一間房的錢。',d:{cash:-5000000,mind:-16},mood:'bad',go:'gamble_deep'}]}]},
+  gamble_deep:{chap:'第六章 · 深淵',age:38,t:'戒不掉的癮',x:'賭博的刺激像鉤子勾住了你。牌桌、期貨、線上百家樂……你開始用投資的錢去填賭桌的洞,又用賭桌的僥倖去賭市場。',c:[
+    {l:'驚覺不對,痛下決心戒賭求助',d:{mind:10,rel:6,cash:-1000000},log:'你向家人坦白、尋求協助,狠狠把自己拉出泥沼。承認有病,是痊癒的開始。',mood:'good',go:'crash'},
+    {l:'再賭一把翻本,這次一定行',d:{cash:-3000000,debt:3000000},f:['revenge'],log:'你借錢想一次翻本,把理智輸在了僥倖上。',roll:[
+      {w:3,log:'你僥倖回本,嚇出一身冷汗,發誓收手。',d:{cash:5000000,mind:2},mood:'good',go:'crash'},
+      {w:7,log:'賭債像滾雪球,你把大半身家和尊嚴一起輸進了牌桌。',d:{cash:-6000000,debt:4000000,mind:-18,rel:-12},mood:'bad',go:'crash'}]}]},
+  crash:{kind:'bet',chap:'第七章 · 股災',age:40,t:'退潮的時候',base:7500000,go:'fork',x:'一場全球性的股災襲來,你才發現資產裡有多少是「泡沫」。眾人恐慌逃命時,你要保守應對,還是逆勢重壓抄底?'},
+  final:{chap:'終章 · 清算',age:46,t:'守成者的答卷',x:'人到中年,那筆父親給的兩千萬,如今在你手上變成了什麼樣子?這份人生的答卷,只有你自己能打分。',c:[
+    {l:'把家業與正確的觀念傳承下去',d:{mind:8,rel:10,fame:6},set:{philanthropist:true},log:'你成立家族基金會,回饋社會,也把「守成比創業更難」的心法傳給下一代。',mood:'good'},
+    {l:'低調享受生活,把重心還給家人',d:{mind:10,rel:12},log:'你收起鋒芒,把時間留給家人與興趣。錢夠了,人生的重點就換了。',mood:'good'},
+    {l:'再拚一把,想證明自己不只是靠爸',d:{cash:-3000000},log:'你想擺脫「富二代」的標籤,再創一番事業。',roll:[
+      {w:5,log:'你真的闖出了自己的一片天,證明了實力。',d:{cash:12000000,fame:12,mind:6},mood:'good'},
+      {w:5,log:'你太想證明自己,反而栽了跟頭,晚節有損。',d:{cash:-7000000,mind:-10},mood:'bad'}]}]}
+ }
+});
+A({
+ id:'whitecollar',name:'林佳蓉',emoji:'💼',tag:'32歲 · 白領上班族',
+ desc:'外商公司專案經理,月薪不錯卻談不上寬裕。標準的三明治世代,夾在結婚、買房、孝親之間。想靠投資,替按部就班的人生擠出一點餘裕。',
+ flaw:'夾在婚房壓力間追高殺低,怕錯過也怕賠',
+ betBase:400000,income:1000000,incomeLabel:'外商上班的薪水',mid:['marry','house','borrow'],
+ start:{year:2026,age:32,cash:1200000,stock:300000,debt:0,mind:60,rel:62,fame:15},
+ first:'start',
+ scenes:{
+  start:{chap:'第一章 · 中產的算盤',age:32,t:'薪水以外的出路',x:'升上專案經理,月薪十萬,聽起來風光,但台北的房價像一座翻不過的山。你打開證券戶,想讓錢替你多做一點事。',c:[
+    {l:'定期定額買 ETF,穩穩存資產',d:{stock:900000,cash:-900000,mind:6},f:['disciplined'],log:'你設定每月自動扣款,把投資變成像繳房租一樣的習慣。',mood:'good',go:'bull'},
+    {l:'研究個股,想賺快一點的價差',d:{cash:-800000},log:'你下班後啃財報、追消息,想靠選股加速。',roll:[
+      {w:5,log:'你選對了一波,帳面漂亮,信心大增。',d:{stock:1200000,mind:6,fame:5},mood:'good',go:'bull'},
+      {w:5,log:'你低估了個股的波動,追高殺低,繳了不少學費。',d:{stock:400000,mind:-8},mood:'bad',go:'bull'}]}]},
+  bull:{kind:'bet',chap:'第二章 · 一波行情',age:34,t:'同事都在賺',base:700000,go:'marry',x:'辦公室午餐話題全是股票,連最保守的同事都靠AI股換了車。一種「只有我沒賺到」的焦慮在你心裡發酵。這一波,你要跟多少?'},
+  marry:{chap:'第三章 · 婚姻',age:35,t:'要不要走入婚姻',x:'交往多年的另一半求婚了。結婚意味著兩人財務合併、共同承擔,也意味著一筆不小的婚禮與新生活開銷。',c:[
+    {l:'結婚,兩人一起打拚',d:{rel:16,cash:-800000},set:{married:true},log:'你們辦了場溫馨的婚禮,把兩人的積蓄與夢想並在一起。',mood:'good',go:'house'},
+    {l:'先不結,把錢留著衝事業與投資',d:{rel:-10,mind:2},log:'你委婉地說「再等等」。對方的眼神黯了一下,你把愧疚壓進了 Excel 試算表。',mood:'bad',go:'house'},
+    {l:'結婚,並決定一起生個孩子',d:{rel:14,cash:-1200000},set:{married:true,kids:true},log:'你們不只結了婚,還迎來新生命。開銷翻倍,但家也更完整了。',mood:'good',go:'house'}]},
+  house:{chap:'第四章 · 買房',age:37,t:'那座翻不過的山',x:'房東通知要收回房子。買房的念頭再也躲不掉——頭期款會掏空你大半積蓄,還要揹二十年房貸。但租房的漂泊,也讓人疲憊。',c:[
+    {l:'咬牙買房,揹起二十年房貸',d:{cash:-2500000,debt:8000000,rel:10,mind:-4},set:{houses:1},log:'你簽下人生最大的一筆合約。有了自己的家,卻也揹上了沉甸甸的貸款。',mood:'good',go:'borrow'},
+    {l:'不買房,把頭期款拿去投資錢滾錢',d:{mind:2,rel:-6},f:['allin'],log:'你賭一把:與其被房貸綁死二十年,不如讓這筆錢在市場裡長大。',go:'borrow'},
+    {l:'買間小的,量力而為',d:{cash:-1500000,debt:5000000,rel:6},set:{houses:1},log:'你選了間負擔得起的小宅,不讓房貸壓垮生活品質。',mood:'good',go:'borrow'}]},
+  borrow:{chap:'第五章 · 人情',age:39,t:'哥哥的請求',x:'哥哥創業缺周轉,開口向你借五十萬。你手頭因為買房正緊,這筆錢幾乎是你僅剩的活動資金。血濃於水,但你也有自己的家要顧。',c:[
+    {l:'借給哥哥,家人總要互相',d:{cash:-500000,rel:8},set:{lent:true},log:'你把僅剩的積蓄借了出去。太太雖有微詞,但也理解。',mood:'good',go:'gamble'},
+    {l:'只借一半,量力而為',d:{cash:-250000,rel:2},set:{lent:true},log:'你借了能力範圍內的數字,把話說清楚。哥哥有點失望,但沒撕破臉。',go:'gamble'},
+    {l:'誠實拒絕,自己也自身難保',h:'得:守住現金流　失:手足情',d:{rel:-12,mind:2},log:'你紅著臉說真的沒辦法,守住了自家的現金流;哥哥沉默地掛了電話,氣氛變得微妙。',go:'gamble'}]},
+  gamble:{chap:'第六章 · 誘惑',age:41,t:'老同學的「明牌」',x:'大學死黨拉你進一個「內線投資群」,群主自稱有券商朋友,還揪大家湊錢去澳門「玩一把大的」。「跟著走,一趟抵你上班一年。」',c:[
+    {l:'一眼識破,退群封鎖',h:'得:守住紀律　失:被說膽小',d:{mind:8,fame:-2},f:['disciplined'],log:'你太清楚天下沒有穩賺的內線,默默退了群(雖被說膽小),後來那群主果然捲款跑路。',mood:'good',go:'crash'},
+    {l:'半信半疑,跟一小筆',d:{cash:-400000},set:{gambler:true},log:'你抱著試試看的心態跟了一把。',roll:[
+      {w:4,log:'居然真的小賺,你慶幸見好就收,沒再加碼。',d:{cash:500000,mind:2},mood:'good',go:'crash'},
+      {w:6,log:'所謂內線根本是話術,你的血汗錢有去無回。',d:{cash:-400000,mind:-12,rel:-4},mood:'bad',go:'crash'}]},
+    {l:'湊一大筆跟去賭一把翻身',d:{cash:-1000000,debt:500000},set:{gambler:true},f:['revenge'],log:'你把買房剩下的錢和一點借款壓了上去,想一次翻身。',roll:[
+      {w:3,log:'手氣爆棚,你贏了一筆,夠付好幾期房貸。',d:{cash:2000000,mind:2},mood:'good',go:'crash'},
+      {w:7,log:'你在牌桌上輸光,還揹了債,回家不敢看另一半的眼睛。',d:{cash:-600000,debt:500000,mind:-16,rel:-14},mood:'bad',go:'crash'}]}]},
+  crash:{kind:'bet',chap:'第七章 · 股災',age:43,t:'風暴中的三明治',base:1200000,go:'fork',x:'股災來襲,投資帳面慘綠,房貸卻一期都不能少繳。上有父母、下有孩子,你是被兩頭夾住的三明治。這個關口,你敢壓多大?'},
+  final:{chap:'終章 · 清算',age:50,t:'中年的資產負債表',x:'孩子漸漸長大,父母漸漸年邁,你也走過了人生的正午。攤開這張辛苦經營的資產負債表,你為自己這些年的選擇,寫下註解。',c:[
+    {l:'穩健收尾,把投資交給時間',d:{mind:10,rel:10},f:['disciplined'],log:'你把配置調得穩妥,不再追漲殺跌,把心力還給家庭與健康。',mood:'good'},
+    {l:'把理財經驗分享,幫助更多小資族',d:{fame:16,mind:8,rel:6},log:'你把三明治世代的血淚心得寫成文章,意外幫了許多和你一樣的人。',mood:'good'},
+    {l:'不服輸,退休前再衝一波報酬',d:{cash:-1000000},f:['fomo'],log:'你想在退休前把資產再往上推一級。',roll:[
+      {w:5,log:'你收官得漂亮,替退休生活添了厚實的底氣。',d:{stock:2500000,mind:4},mood:'good'},
+      {w:5,log:'臨門一腳的貪念,讓你吐回不少多年積累,懊悔不已。',d:{stock:-1800000,mind:-10},mood:'bad'}]}]}
+ }
+});
+A({
+ id:'freshgrad',name:'黃柏翔',emoji:'🎓',tag:'23歲 · 社會新鮮人',
+ desc:'非本科出身、白手起家的社會新鮮人,起薪不到三萬,還揹著學貸。你沒有靠山,只有一股不想認命的傻勁——想靠投資,替自己搏一個不一樣的未來。',
+ flaw:'本錢太少又急著翻身,容易走捷徑、賭大的',
+ betBase:120000,income:350000,incomeLabel:'薪水與下班兼差',mid:['love','house','borrow'],
+ start:{year:2026,age:23,cash:500000,stock:0,debt:300000,mind:60,rel:62,fame:12},
+ first:'start',
+ scenes:{
+  start:{chap:'第一章 · 一無所有',age:23,t:'學貸與夢想',x:'第一份工作月薪 2 萬 8,扣掉房租、生活費、學貸,幾乎不剩。你看著手機裡別人曬的獲利截圖,握緊了戶頭裡僅有的八萬塊。',c:[
+    {l:'先還學貸、記帳,穩紮穩打',d:{debt:-100000,cash:-30000,mind:6},f:['frugal'],log:'你忍住手癢,先把財務打理乾淨,才小額開始投資。慢,但很穩。',mood:'good',go:'bull'},
+    {l:'錢太少,乾脆全押一支飆股翻本',d:{cash:-70000},set:{gambler:true},log:'你把僅有的閒錢全壓在一支當紅飆股,賭一個翻身。',roll:[
+      {w:4,log:'新手運爆棚,你小賺一筆,嚐到甜頭。',d:{cash:90000,mind:6,fame:5},mood:'good',go:'bull'},
+      {w:6,log:'你買在最高點,幾天就腰斬,連學貸都更難還了。',d:{cash:-40000,mind:-12},mood:'bad',go:'bull'}]},
+    {l:'下班兼差,先把本金做大',d:{cash:120000,mind:-3,rel:-3},f:['frugal'],log:'你跑外送、接案,用睡眠換本金。累,但戶頭數字實實在在地長。',mood:'good',go:'bull'}]},
+  bull:{kind:'bet',chap:'第二章 · 想翻身',age:26,t:'別人的暴富',base:90000,go:'love',x:'同梯朋友靠迷因股、靠幣圈曬出翻倍截圖。你的本金太小,再穩健的報酬都像杯水車薪。翻身的焦慮燒得你坐不住——這一把,你敢下多重?'},
+  love:{chap:'第三章 · 感情',age:29,t:'清貧裡的愛情',x:'你遇到一個不嫌你窮、願意陪你吃泡麵存錢的人。但對方的家人隱約覺得你「沒前途」。要不要在還沒站穩時,走入婚姻?',c:[
+    {l:'兩人一起吃苦,結婚',d:{rel:18,cash:-200000},set:{married:true},log:'你們辦了場最簡單的婚禮,把「以後會更好」當成誓言。有人並肩,苦也甜。',mood:'good',go:'house'},
+    {l:'先拚出成績再談,暫時分開',h:'得:專注事業　失:感情、心情',d:{rel:-14,mind:-4,fame:4},log:'你怕拖累對方,選擇先拚事業,衝出了一點成績;夜裡卻常想,這樣的犧牲到底值不值得。',go:'house'},
+    {l:'結婚,並約定一起省吃儉用買房',d:{rel:15,cash:-150000},set:{married:true},log:'你們結了婚,把每一塊錢都花在刀口上,朝著共同的目標前進。',mood:'good',go:'house'}]},
+  house:{chap:'第四章 · 買房',age:33,t:'第一間房的門檻',x:'存了好幾年,你們的頭期款終於湊得差不多。但房價又漲了一波,買下去會揹上沉重的貸款,不買又怕永遠追不上。',c:[
+    {l:'買下小宅,苦一點也要有個家',d:{cash:-1000000,debt:6000000,rel:12,mind:-4},set:{houses:1},log:'你們買下人生第一間房,雖是老公寓,卻是實實在在屬於自己的窩。',mood:'good',go:'borrow'},
+    {l:'先不買,把錢繼續投資滾大',d:{mind:2,rel:-4},f:['allin'],log:'你說服另一半再等等,把頭期款留在市場裡,賭它長得比房價快。',go:'borrow'},
+    {l:'回鄉買房,遠離高房價',d:{cash:-600000,debt:2500000,rel:6,fame:-3},set:{houses:1},log:'你們決定離開台北,回到房價親民的家鄉。生活慢了,壓力也小了。',mood:'good',go:'borrow'}]},
+  borrow:{chap:'第五章 · 人情',age:36,t:'發財夢的朋友',x:'一個老朋友興沖沖找你,說有個「穩賺的生意」,只差一筆啟動資金,想向你借二十萬,還信誓旦旦要分你紅利。',c:[
+    {l:'看不懂的生意不碰,婉拒',d:{mind:6,rel:-4},log:'你委婉拒絕。半年後那「穩賺生意」果然血本無歸,你慶幸沒被拖下水。',mood:'good',go:'gamble'},
+    {l:'念在交情,借出一部分',d:{cash:-200000,rel:4},set:{lent:true},log:'你借了一些,權當交個朋友。這筆錢,你做了要不回來的心理準備。',go:'gamble'},
+    {l:'不但借,還想一起投資分紅',d:{cash:-300000,debt:100000},set:{lent:true,gambler:true},log:'你被分紅沖昏頭,把積蓄和借款都投了進去。',roll:[
+      {w:3,log:'意外地,生意真的做起來了,你分到一筆紅利。',d:{cash:600000,mind:4,rel:4},mood:'good',go:'gamble'},
+      {w:7,log:'生意慘賠、朋友避不見面,你的錢和交情一起蒸發。',d:{cash:-100000,mind:-12,rel:-10},mood:'bad',go:'gamble'}]}]},
+  gamble:{chap:'第六章 · 誘惑',age:38,t:'翻身的最後一把',x:'人到中年,資產卻還是不上不下。工地認識的大哥揪你去簽賭、玩期貨,說「拚一把,人生就翻篇了」。翻身的執念,又在你胸口燒起來。',c:[
+    {l:'認清捷徑最貴,拒絕',h:'得:守住紀律　失:得罪拉你的人',d:{mind:8,rel:-2},f:['disciplined'],log:'你摸摸口袋裡孩子的照片,轉身離開(拉你的人有些不快)。你已經沒有輸的本錢了。',mood:'good',go:'crash'},
+    {l:'壓一注,賭這輩子翻身',d:{cash:-300000,debt:200000},set:{gambler:true},f:['revenge'],log:'你把辛苦攢的錢押了上去,賭一個階級翻轉。',roll:[
+      {w:3,log:'老天開眼,你贏了一大筆,離夢想第一次那麼近。',d:{cash:1200000,mind:2,fame:5},mood:'good',go:'crash'},
+      {w:7,log:'你輸光了本、揹上了債,翻身夢碎成一地,回家的路格外漫長。',d:{cash:-300000,debt:200000,mind:-18,rel:-10},mood:'bad',go:'crash'}]}]},
+  crash:{kind:'bet',chap:'第七章 · 股災',age:41,t:'沒有安全網的人',base:180000,go:'fork',x:'股災來時,有靠山的人有靠山,沒靠山的你只有自己。每一分虧損都格外痛,因為你沒有可以賠的本錢。這一把,你賭多大?'},
+  final:{chap:'終章 · 清算',age:48,t:'白手起家的答案',x:'從一無所有走到今天,你嚐盡了沒有靠山的辛酸。當年那個握著八萬塊、不想認命的年輕人,如今活成了什麼模樣?',c:[
+    {l:'知足感恩,守住這得來不易的一切',d:{mind:12,rel:10},log:'你不再和別人比,只珍惜自己一磚一瓦蓋起來的人生。這份踏實,無人能奪。',mood:'good'},
+    {l:'把白手起家的故事,說給年輕人聽',d:{fame:16,mind:8,rel:6},log:'你的逆襲故事鼓舞了無數和你當年一樣的年輕人,你成了他們的光。',mood:'good'},
+    {l:'還不甘心,想再賭一把翻更大',d:{cash:-300000},set:{gambler:true},log:'你覺得自己還能更好,把積蓄又押了上去。',roll:[
+      {w:5,log:'這次你穩穩收手,替辛苦的一生添了一筆漂亮的句點。',d:{cash:800000,mind:4},mood:'good'},
+      {w:5,log:'不甘心的貪念,把你辛苦累積的一切又推回了原點。',d:{cash:-300000,mind:-12},mood:'bad'}]}]}
+ }
+});
+A({
+ id:'techbro',name:'周家豪',emoji:'👨‍💻',tag:'34歲 · 科技新貴',
+ desc:'竹科 IC 設計工程師,年薪加分紅逼近三百萬,手上還有一大把公司配股。高薪、高波動、高工時——你的人生,和自家股價一起劇烈跳動。',
+ flaw:'單押自家股、過度自信,把身家和公司綁在一起',
+ betBase:1300000,income:2800000,incomeLabel:'科技業的年薪與分紅',mid:['love','house','borrow'],
+ start:{year:2026,age:34,cash:1500000,stock:4000000,debt:0,mind:60,rel:60,fame:18},
+ first:'start',
+ scenes:{
+  start:{chap:'第一章 · 配股的重量',age:34,t:'紙上富貴',x:'分紅配股入帳,你的持股市值一夕破四百萬——全是自家公司股票。同事群組人人喊「抱緊處理」,你站在集中與分散的岔路口。',c:[
+    {l:'分批賣自家股,分散到全球 ETF',d:{stock:0,mind:6},f:['disciplined'],log:'你理性地把身家從單一公司分散出去,睡得更安穩了。',mood:'good',go:'bull'},
+    {l:'ALL IN 自家公司,我最懂它',d:{cash:-1500000,stock:1500000},f:['allin'],log:'你把現金也投進自家股。「我在裡面做事,我最清楚。」',roll:[
+      {w:5,log:'公司拿下大單,股價再翻一倍,你的身家水漲船高。',d:{stock:4000000,mind:8,fame:10},mood:'good',go:'bull'},
+      {w:5,log:'一則財報下修,股價重挫,你的薪水和身家同時縮水。',d:{stock:-2500000,mind:-14},mood:'bad',go:'bull'}]}]},
+  bull:{kind:'bet',chap:'第二章 · 過勞與行情',age:36,t:'用命換來的行情',base:1300000,go:'love',x:'科技股正熱,你一邊爆肝寫扣、一邊擠出時間盯盤。這波你最懂的產業就在眼前噴出,身家要不要跟著加碼一把?'},
+  love:{chap:'第三章 · 感情',age:37,t:'螢幕以外的人',x:'交往的對象抱怨你「回家還在盯盤、連吃飯都在看報價」。她說:「你到底是娶了我,還是娶了股票?」你們的關係亮起了警訊。',c:[
+    {l:'關掉盤面,把週末還給她,並求婚',d:{rel:18,mind:6,cash:-800000},set:{married:true},log:'你放下手機,認真經營感情,並鼓起勇氣求婚。人味,回來了。',mood:'good',go:'house'},
+    {l:'跟她說「等我財富自由就好」',h:'得:全力衝事業　失:感情、心情',d:{rel:-16,mind:-4,fame:4},log:'你把她的話當耳邊風、把時間全給了工作;她的失望,在一次次「等一下」裡累積成裂痕。',go:'house'},
+    {l:'拉她一起研究投資,變成共同目標',d:{rel:8,mind:4},set:{married:true},log:'你們開始一起看財報、一起規劃。偶爾爭執,但至少在同一條船上。',go:'house'}]},
+  house:{chap:'第四章 · 買房',age:39,t:'科技新貴的煩惱',x:'高薪讓你買得起房,但竹科周邊的房價也被同行們炒得驚人。你可以買豪宅、可以買多間投資,也可以繼續把錢留在你最熟悉的股市。',c:[
+    {l:'買一間自住好宅,安定生活',d:{cash:-3000000,debt:3000000,rel:10},set:{houses:1},log:'你買下一間舒適的房子,把家安頓好,心也定了下來。',mood:'good',go:'borrow'},
+    {l:'買多間收租,打造被動收入',d:{cash:-4000000,debt:6000000},set:{houses:2,landlord:true},log:'你用高薪撐起槓桿,置入多間房產,替自己鋪一條被動收入的路。',mood:'good',go:'borrow'},
+    {l:'不買房,資金全押最懂的科技股',d:{mind:2,rel:-6},f:['allin'],log:'你堅信科技股的成長遠勝房產,把資金全留在市場。',go:'borrow'}]},
+  borrow:{chap:'第五章 · 人情',age:41,t:'老同學的新創',x:'大學同學拉你投資他的 AI 新創,開口要五百萬,說「上市後翻十倍,只找信得過的人」。你懂技術,也看得出這其中有夢想、也有風險。',c:[
+    {l:'理性評估後,只投能賠得起的金額',d:{cash:-1000000,mind:4},set:{lent:true},log:'你投了一小筆當天使,把它當成可能歸零的樂透。',roll:[
+      {w:4,log:'新創真的做起來了,你的早期投資翻了好幾倍。',d:{cash:5000000,mind:8,fame:10},mood:'good',go:'gamble'},
+      {w:6,log:'新創燒光了錢倒閉,你的投資打了水漂,但無傷根本。',d:{mind:-6},mood:'bad',go:'gamble'}]},
+    {l:'重壓身家,賭一個財富自由',d:{cash:-1500000,stock:-3500000},set:{lent:true,allin:true},log:'你被「翻十倍」誘惑,把大半身家壓進同學的夢裡。',roll:[
+      {w:3,log:'新創成功上市,你的重押換來驚人回報,一步登天。',d:{cash:20000000,fame:15,mind:6},mood:'good',go:'gamble'},
+      {w:7,log:'新創失敗,你的身家隨著它的夢一起碎了。',d:{mind:-18,rel:-10},mood:'bad',go:'gamble'}]},
+    {l:'婉拒,不把錢投進看不懂風險的地方',d:{rel:-4,mind:4},log:'你禮貌地說不。友情或許有點尷尬,但你守住了自己的原則。',go:'gamble'}]},
+  gamble:{chap:'第六章 · 誘惑',age:43,t:'高端牌局',x:'幾個同樣高薪的同事,週末揪你進一個「科技人俱樂部」——檯面上是紅酒雪茄,檯面下是重注的德州撲克與選擇權對賭。「智商稅嘛,我們這種人不會輸。」',c:[
+    {l:'看穿賭博就是賭博,禮貌退出',h:'得:守住紀律　失:被同事說掃興',d:{mind:8,fame:-2},f:['disciplined'],log:'你清楚再高的智商也算不贏莊家的機率,笑著離席(同事覺得你有點掃興)。',mood:'good',go:'crash'},
+    {l:'玩玩選擇權對賭,反正懂數學',d:{cash:-1000000},set:{gambler:true},log:'你自恃懂機率,下場玩了幾把高風險的選擇權。',roll:[
+      {w:4,log:'你憑著紀律小賺就跑,證明了自己的冷靜。',d:{cash:1200000,mind:2},mood:'good',go:'crash'},
+      {w:6,log:'選擇權的歸零速度超乎想像,你的自信被市場狠狠打臉。',d:{cash:-1200000,mind:-14},mood:'bad',go:'crash'}]}]},
+  crash:{kind:'bet',chap:'第七章 · 股災',age:45,t:'科技泡沫',base:3300000,go:'fork',x:'科技股泡沫破裂,你重壓的部位(尤其自家股)首當其衝,帳面一夕蒸發你好幾年的薪水。這個當口,你要保守收手,還是逆勢加碼賭復甦?'},
+  final:{chap:'終章 · 清算',age:52,t:'工程師的中場',x:'從爆肝寫程式到身家隨股價起伏,你走過了科技業最瘋狂的一段。是時候盤點——你用青春與健康換來的,究竟是什麼?',c:[
+    {l:'提早半退休,把時間換回生活',d:{mind:12,rel:12},log:'你靠累積的資產,提早過上半退休生活,把時間還給家人與自己。',mood:'good'},
+    {l:'成立工作室,把經驗變成事業',d:{cash:-1000000,fame:14},set:{entrepreneur:true},log:'你出來創業,把技術與投資的心得,做成一份屬於自己的事業。',roll:[
+      {w:5,log:'你的工作室闖出名號,事業與財富再上一層。',d:{cash:8000000,fame:10,mind:4},mood:'good'},
+      {w:5,log:'離開了大公司的光環,創業比想像艱難,壓力不小。',d:{cash:-2000000,mind:-8},mood:'bad'}]},
+    {l:'把身心健康擺第一,徹底放下',d:{mind:14,rel:10,fame:-4},log:'你看淡了名利,把健康與家庭放在最前面。錢夠用就好,命只有一條。',mood:'good'}]}
+ }
+});
+A({
+ id:'founder',name:'王大明',emoji:'🏭',tag:'38歲 · 創業小老闆',
+ desc:'白手創立一家小型製造廠的老闆,手握一筆營運資金,也揹著營運風險。你習慣了「拿錢滾錢、以債擴張」的膽識,想把這套生意人的直覺搬到股市——但商海與股海,不完全是同一套規則。',
+ flaw:'把做生意的膽識與槓桿硬搬到股市,容易過度擴張',
+ betBase:1100000,income:1500000,incomeLabel:'工廠本業的營運獲利',mid:['love','house','borrow'],
+ start:{year:2026,age:38,cash:5000000,stock:0,debt:0,mind:60,rel:62,fame:20},
+ first:'start',
+ scenes:{
+  start:{chap:'第一章 · 生意人的直覺',age:38,t:'閒錢的去處',x:'工廠營運上了軌道,帳上多了五百萬閒錢。你不習慣讓錢躺著,盤算著要不要把它投進股市,替本業之外再開一條財路。',c:[
+    {l:'買穩健的高股息與 ETF,當作second income',d:{stock:3000000,cash:-3000000,mind:6},f:['disciplined'],log:'你把股票當「不用管理的分店」,買進穩健標的、穩穩領息。',mood:'good',go:'bull'},
+    {l:'把閒錢投回本業擴廠',d:{cash:-4000000,debt:2000000},set:{entrepreneur:true},log:'你相信自己最懂的還是本業,借錢擴廠、添設備,賭訂單會跟上。',roll:[
+      {w:5,log:'擴廠後接到大單,產能開滿,營收再上一層。',d:{cash:6000000,mind:8,fame:8},mood:'good',go:'bull'},
+      {w:5,log:'擴廠後市場需求卻放緩,設備閒置、利息照付,現金流吃緊。',d:{cash:1000000,mind:-12},mood:'bad',go:'bull'}]}]},
+  bull:{kind:'bet',chap:'第二章 · 商海直覺',age:41,t:'把膽識搬進股市',base:1800000,go:'love',x:'股市正熱,你用做生意的膽識看待它:別人怕的時候貪、該押就重押。但股票的波動,和你熟悉的訂單可不一樣。這一把,你壓多大?'},
+  love:{chap:'第三章 · 家庭',age:43,t:'聚少離多的老闆',x:'你把大半心力給了工廠與股票,太太獨自扛起家庭,孩子也漸漸和你疏遠。她說:「錢再多,這個家你也缺席了。」',c:[
+    {l:'調整步調,把時間還給家庭',d:{rel:18,mind:8},set:{married:true},log:'你把一部分管理權下放,週末不再進工廠。家的溫度,一點點回來了。',mood:'good',go:'house'},
+    {l:'跟她說「等公司上軌道就好」',h:'得:全力衝事業　失:家庭、心情',d:{rel:-16,mind:-4,fame:4},set:{married:true},log:'你把家庭排在事業後面、把公司衝上了一階;太太的失望,卻在一次次缺席裡結成了冰。',go:'house'},
+    {l:'乾脆讓太太一起經營,夫妻同心',d:{rel:10,mind:4},set:{married:true},log:'你們變成事業夥伴,並肩作戰。少了浪漫,多了革命情感。',go:'house'}]},
+  house:{chap:'第四章 · 置產',age:45,t:'廠房與住宅',x:'手頭寬裕了,你考慮置產。是買間好宅安頓家人、買廠辦收租當包租公,還是把資金全留著周轉與投資?',c:[
+    {l:'買一間好宅,給家人安穩',d:{cash:-3000000,debt:2000000,rel:10},set:{houses:1},log:'你買下一間舒適的房子,總算給了家人一個安穩的窩。',mood:'good',go:'borrow'},
+    {l:'買廠辦與店面收租,當包租公',d:{cash:-4000000,debt:4000000},set:{houses:2,landlord:true},log:'你把不動產也變成生財工具,租金成了另一條穩定現金流。',mood:'good',go:'borrow'},
+    {l:'不置產,資金全留著擴張與投資',d:{mind:2,rel:-6},f:['allin'],log:'你信奉「現金為王、周轉為大」,把資金全留在能生利的地方。',go:'borrow'}]},
+  borrow:{chap:'第五章 · 人情',age:47,t:'合夥人的求援',x:'一起打拚多年的老合夥人,家裡出了急事,開口向你借三百萬。你們有交情,但你也清楚,借錢給朋友,常常是連本帶友一起賠。',c:[
+    {l:'念在多年交情,爽快借出',d:{cash:-3000000,rel:12},set:{lent:true},log:'你二話不說幫了忙。這份義氣,朋友記在心裡。',mood:'good',go:'gamble'},
+    {l:'借,但簽好借據談清楚',d:{cash:-3000000,rel:4,mind:3},set:{lent:true},log:'你借了,也把公私分清楚。朋友理解,你也睡得安穩。',go:'gamble'},
+    {l:'婉拒,生意人先顧好自己',h:'得:守住現金流　失:多年交情',d:{rel:-12,mind:2},log:'你委婉推辭、守住了現金流的底線,只是多年的交情蒙上一層陰影。',go:'gamble'}]},
+  gamble:{chap:'第六章 · 誘惑',age:49,t:'酒桌上的賭局',x:'生意場上的應酬,總少不了賭。這回幾個同業揪你上牌桌、簽期指、對賭匯率,說「敢賭的老闆才做得大」。酒精與豪氣一上頭,理智最容易鬆手。',c:[
+    {l:'滴酒不沾這一味,守住理智',h:'得:守住理智　失:被說不夠海派',d:{mind:8,fame:-2},f:['disciplined'],log:'你笑著推說「我只做我懂的生意」(同業覺得你不夠海派),散場後你慶幸沒上桌。',mood:'good',go:'crash'},
+    {l:'應酬性質玩兩把,點到為止',d:{cash:-800000},log:'你陪著玩了幾把,拿捏著分寸。',roll:[
+      {w:5,log:'你守住底線,小輸小贏,喝完這攤全身而退。',d:{cash:500000,mind:2},mood:'good',go:'crash'},
+      {w:5,log:'酒一上頭你越賭越大,才驚覺這是個無底洞。',d:{cash:-600000,mind:-6},set:{gambler:true},mood:'bad',go:'crash'}]},
+    {l:'豪氣重注,敢賭才做得大',d:{cash:-2000000},set:{gambler:true},log:'你把老闆的豪氣全押上牌桌。',roll:[
+      {w:4,log:'你贏了一大把,同業對你這老闆刮目相看。',d:{cash:3000000,mind:-4,fame:5},mood:'good',go:'crash'},
+      {w:6,log:'莊家的局你看不透,一夜輸掉大半年的利潤。',d:{cash:-2500000,debt:1000000,mind:-16},mood:'bad',go:'crash'}]}]},
+  crash:{kind:'bet',chap:'第七章 · 景氣寒冬',age:52,t:'訂單與股災齊跌',x:'景氣反轉,工廠訂單腰斬,股市也同步重挫。你的槓桿在順風時是翅膀,逆風時卻是枷鎖。這道生死關,你要保守收縮,還是賭一把逆勢?',base:2800000,go:'fork'},
+  final:{chap:'終章 · 清算',age:58,t:'生意人的總帳',x:'從一間小廠拚到今天,你在商海與股海裡都嚐過大風大浪。準備交棒的這一刻,你攤開人生的總帳,為自己的膽識與取捨,寫下結語。',c:[
+    {l:'穩健交棒,把事業與財富傳承下去',d:{mind:10,rel:10,fame:8},set:{philanthropist:true},log:'你把公司交給信任的人,設立獎學金回饋鄉里。生意人的最後一筆投資,是人與情義。',mood:'good'},
+    {l:'收掉槓桿,安穩退休陪家人',d:{mind:12,rel:12},log:'你還清貸款、賣掉不必要的部位,把餘生交給家人與釣竿。錢夠了,人就該下桌。',mood:'good'},
+    {l:'不服老,再賭一次大擴張',d:{cash:-2000000,debt:2000000},f:['allin'],log:'你不甘心就此收手,想再搏一次事業的高峰。',roll:[
+      {w:5,log:'你寶刀未老,最後一搏漂亮收官,替一生畫下驚嘆號。',d:{cash:8000000,fame:10,mind:4},mood:'good'},
+      {w:5,log:'過度擴張反成拖累,晚年為這最後的豪賭付出代價。',d:{cash:-5000000,mind:-12},mood:'bad'}]}]}
+ }
+});
+buildStart();
+(function(){const p=new URLSearchParams(location.search);const seed=p.get('seed'),cid=p.get('char'),nm=p.get('name');if(seed)document.getElementById('seedInput').value=seed;if(nm)document.getElementById('nameInput').value=nm;if(cid){const c=CHARS.find(x=>x.id===cid);if(c)startGame(c);}})();
+</script>
+</body>
+</html>
